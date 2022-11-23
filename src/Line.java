@@ -10,8 +10,8 @@ class Point {
 
 public class Line {
     Point first, second;
-    int A, B, C;
-
+    double A, B, C;
+    // TODO override hash
     // TODO think more
     public Line (Point first, Point second) {
         this.first = first.y > second.y ? first : second;
@@ -22,8 +22,8 @@ public class Line {
     }
 
     public Point findCross(Line other) {
-        double x = (double)(this.B * other.C - other.B * this.C) / (double)(this.A * other.B - other.A * this.B);
-        double y = (double)(this.C * other.A - other.C * this.A) / (double)(this.A * other.B - other.A * this.B);
+        double x = (this.B * other.C - other.B * this.C) / (this.A * other.B - other.A * this.B);
+        double y = (this.C * other.A - other.C * this.A) / (this.A * other.B - other.A * this.B);
         return new Point((int)(x), (int)(y));
     }
 }

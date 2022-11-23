@@ -1,5 +1,6 @@
 import java.awt.image.BufferedImage;
 import java.util.*;
+import java.util.function.BiConsumer;
 
 public class ImageEditor {
     private BufferedImage image;
@@ -9,33 +10,40 @@ public class ImageEditor {
     }
 
     public void fillPolygon(Point[] coords, BufferedImage pattern) {
-        HashMap<Integer, ArrayList<Line>> linesPerHorizonFirst = new HashMap<>();
-        HashMap<Integer, ArrayList<Line>> linesPerHorizonSecond = new HashMap<>();
+        ArrayList<Line> lines = new ArrayList<>();
         for (int i = 0; i < coords.length; i++) {
             Point cur = coords[i];
             Point next = coords[(i + 1) % coords.length];
-            Line line = new Line(cur, next);
-
-            linesPerHorizonFirst.putIfAbsent(line.first.y, new ArrayList<>());
-            linesPerHorizonSecond.putIfAbsent(line.second.y, new ArrayList<>());
-            linesPerHorizonFirst.get(line.first.y).add(line);
-            linesPerHorizonSecond.get(line.second.y).add(line);
+            lines.add(new Line(cur, next));
         }
 
-        List<Point> coordsList = Arrays.asList(coords);
-        int minX = coordsList.stream().map(p -> p.x).min(Integer::compare).get();
-        int maxX = coordsList.stream().map(p -> p.x).max(Integer::compare).get();
-        int minY = coordsList.stream().map(p -> p.y).min(Integer::compare).get();
-        int maxY = coordsList.stream().map(p -> p.y).max(Integer::compare).get();
+        HashMap<Integer, ArrayList<Line>> linesPerHorizonUpperPoint = new HashMap<>();
+        HashMap<Integer, ArrayList<Line>> linesPerHorizonBottomPoint = new HashMap<>();
+        lines.forEach(line -> {
+            BiConsumer<HashMap<Integer, ArrayList<Line>>, Integer> addValueToMap = (map, y) -> {
+                map.putIfAbsent(y, new ArrayList<>());
+                map.get(y).add(line);
+            };
+            addValueToMap.accept(linesPerHorizonUpperPoint, line.first.y);
+            addValueToMap.accept(linesPerHorizonBottomPoint, line.second.y);
+        });
+
+        int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, minY = Integer.MAX_VALUE, maxY = Integer.MIN_VALUE;
+        for (Point point : coords) {
+            minX = Math.min(minX, point.x);
+            maxX = Math.max(maxX, point.x);
+            minY = Math.min(minY, point.y);
+            maxY = Math.max(maxY, point.y);
+        }
 
         HashSet<Line> crossingSet = new HashSet<>();
         for (int y = maxY; y >= minY; y--) {
             Line horizon = new Line(new Point(minX, y), new Point(maxX, y));
-            if (linesPerHorizonFirst.containsKey(y)) {
-                crossingSet.addAll(linesPerHorizonFirst.get(y));
+            if (linesPerHorizonUpperPoint.containsKey(y)) {
+                crossingSet.addAll(linesPerHorizonUpperPoint.get(y));
             }
-            if (linesPerHorizonSecond.containsKey(y)) {
-                crossingSet.removeAll(linesPerHorizonSecond.get(y));
+            if (linesPerHorizonBottomPoint.containsKey(y)) {
+                crossingSet.removeAll(linesPerHorizonBottomPoint.get(y));
             }
             List<Integer> crossPoints = crossingSet.stream().map(horizon::findCross).map(p -> p.x).sorted().toList();
             assert (crossPoints.size() % 2) == 0;
