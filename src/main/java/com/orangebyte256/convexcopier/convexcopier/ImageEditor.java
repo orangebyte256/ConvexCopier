@@ -18,7 +18,7 @@ public class ImageEditor {
         this.image = image;
     }
 
-    public void fillPolygonBFS(Convex convex, BufferedImage pattern) {
+    public void fillPolygonBFS(Convex convex, BufferedImage pattern, Point inside) {
         int[][] visited = new int[image.getHeight()][image.getWidth()];
         convex.getLines().forEach(line -> {
             Point first = line.getFirst(), second = line.getSecond();
@@ -41,10 +41,8 @@ public class ImageEditor {
             }
         });
 
-        Point start = new Point((convex.enclosingMaxPoint().x + convex.enclosingMinPoint().x) / 2,
-                (convex.enclosingMaxPoint().y + convex.enclosingMinPoint().y) / 2);
         Queue<Point> queue = new LinkedList<>();
-        queue.add(start);
+        queue.add(inside);
         while (!queue.isEmpty()) {
             Point point = queue.poll();
             int x = point.x;
@@ -114,7 +112,7 @@ public class ImageEditor {
         ImageEditor imageEditor = new ImageEditor(ImageUtils.importImage(imagePath));
 
         Instant startTime = Instant.now();
-        imageEditor.fillPolygon(Convex.importConvex(coordsPath), ImageUtils.importImage(patternPath));
+        imageEditor.fillPolygonBFS(Convex.importConvex(coordsPath), ImageUtils.importImage(patternPath), new Point(350, 260));
         Instant endTime = Instant.now();
         Duration timeElapsed = Duration.between(startTime, endTime);
         System.out.println("Time taken: "+ timeElapsed.toMillis() +" milliseconds");
