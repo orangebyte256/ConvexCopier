@@ -1,3 +1,9 @@
+package main.java.com.orangebyte256.convexcopier.convexcopier;
+
+import main.java.com.orangebyte256.convexcopier.common.Convex;
+import main.java.com.orangebyte256.convexcopier.common.Line;
+import main.java.com.orangebyte256.convexcopier.common.Point;
+
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -12,18 +18,19 @@ public class ImageEditor {
     public void fillPolygon(Convex convex, BufferedImage pattern) {
         int[][] visited = new int[image.getHeight()][image.getWidth()];
         convex.getLines().forEach(line -> {
-            int width = Math.abs(line.first.x - line.second.x);
-            int height = Math.abs(line.first.y - line.second.y);
+            Point first = line.getFirst(), second = line.getSecond();
+            int width = Math.abs(first.x - second.x);
+            int height = Math.abs(first.y - second.y);
             if (width > height) {
-                int left = Math.min(line.first.x, line.second.x);
-                int right = Math.max(line.first.x, line.second.x);
+                int left = Math.min(first.x, second.x);
+                int right = Math.max(first.x, second.x);
                 for (double x = left; x <= right; x += 0.5) {
                     int y = line.getYByX(x);
                     visited[y][(int)x] = 1;
                 }
             } else {
-                int bottom = Math.min(line.first.y, line.second.y);
-                int up = Math.max(line.first.y, line.second.y);
+                int bottom = Math.min(first.y, second.y);
+                int up = Math.max(first.y, second.y);
                 for (double y = bottom; y <= up; y += 0.5) {
                     int x = line.getXByY(y);
                     visited[(int)y][x] = 1;
@@ -63,8 +70,9 @@ public class ImageEditor {
                 map.putIfAbsent(y, new ArrayList<>());
                 map.get(y).add(line);
             };
-            addValueToMap.accept(linesPerHorizonUpperPoint, Math.max(line.first.y, line.second.y));
-            addValueToMap.accept(linesPerHorizonBottomPoint, Math.min(line.first.y, line.second.y));
+            Point first = line.getFirst(), second = line.getSecond();
+            addValueToMap.accept(linesPerHorizonUpperPoint, Math.max(first.y, second.y));
+            addValueToMap.accept(linesPerHorizonBottomPoint, Math.min(first.y, second.y));
         });
 
         Point enclosingMinPoint = convex.enclosingMinPoint();
@@ -78,7 +86,7 @@ public class ImageEditor {
             if (linesPerHorizonBottomPoint.containsKey(y)) {
                 crossingSet.removeAll(linesPerHorizonBottomPoint.get(y));
             }
-            List<Integer> crossPoints = crossingSet.stream().map(horizon::findCross).map(p -> p.x).sorted().toList();
+            List<Integer> crossPoints = crossingSet.stream().map(horizon::findCross).map(p -> p.get().x).sorted().toList();
             assert (crossPoints.size() % 2) == 0;
 
             Iterator<Integer> iter = crossPoints.iterator();

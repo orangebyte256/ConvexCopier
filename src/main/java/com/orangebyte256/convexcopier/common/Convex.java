@@ -1,7 +1,11 @@
+package main.java.com.orangebyte256.convexcopier.common;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Convex implements Serializable {
     final List<Point> points;
@@ -42,27 +46,24 @@ public class Convex implements Serializable {
     }
 
     public void export(String path) {
-        try {
-            FileOutputStream fos = new FileOutputStream(path);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(this);
-            oos.close();
-            fos.close();
-        } catch (IOException e) {
+        try (PrintWriter out = new PrintWriter(path)) {
+            String format = points.stream().map(Object::toString).collect(Collectors.joining(","));
+            out.print(format);
+        } catch (FileNotFoundException e) {
             System.err.println("Export of file with vertex was failed");
             throw new RuntimeException(e);
         }
     }
 
-    static Convex importConvex(String path) {
+    public static Convex importConvex(String path) {
         try {
-            FileInputStream file = new FileInputStream(path);
-            ObjectInputStream in = new ObjectInputStream(file);
-            Convex res = (Convex) in.readObject();
-            in.close();
-            file.close();
+            Scanner scanner = new Scanner(new File(path));
+            String text = scanner.useDelimiter("\\A").next();
+            Convex res = new Convex(Arrays.stream(text.split( "," )).map(Point::importPoint).
+                    collect(Collectors.toList()));
+            scanner.close();
             return res;
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (FileNotFoundException e) {
             System.err.println("Import of file with vertex was failed");
             throw new RuntimeException(e);
         }

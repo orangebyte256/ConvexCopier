@@ -1,3 +1,5 @@
+package main.java.com.orangebyte256.convexcopier.common;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;

@@ -1,3 +1,10 @@
+package main.java.com.orangebyte256.convexcopier.pointcreator;
+
+import main.java.com.orangebyte256.convexcopier.common.Convex;
+import main.java.com.orangebyte256.convexcopier.common.ImageUtils;
+import main.java.com.orangebyte256.convexcopier.common.Line;
+import main.java.com.orangebyte256.convexcopier.common.Point;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -19,7 +26,16 @@ public class PointCreator extends JLabel {
 
         @Override
         public void mousePressed(MouseEvent e) {
-            points.add(new Point(e.getX(), e.getY()));
+            Point curPoint = new Point(e.getX(), e.getY());
+            if (points.size() > 1) {
+                Line newLine = new Line(points.get(points.size() - 1), curPoint);
+                for (int i = 1; i < points.size() - 1; i++) {
+                    if ((new Line(points.get(i - 1), points.get(i))).findCross(newLine).isPresent()) {
+                        return;
+                    }
+                }
+            }
+            points.add(curPoint);
             updateFrame();
         }
 
@@ -96,6 +112,5 @@ public class PointCreator extends JLabel {
     public static void main(String[] args) {
         new PointCreator("penguins");
     }
-
 
 }
