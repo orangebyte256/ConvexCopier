@@ -1,59 +1,28 @@
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 
 public class Main {
     private static ImageEditor imageEditor = null;
 
-    private static void exportImage(String path) {
-        File outputfile = new File(path + ".jpg");
-        try {
-            ImageIO.write(imageEditor.getImage(), "jpg", outputfile);
-        } catch (IOException e) {
-            // TODO change it
-            System.err.println("Some error happened while exporting");
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static BufferedImage importImage(String path) {
-        File img = new File(path + ".jpg");
-        try {
-            return ImageIO.read(img);
-        } catch (IOException e) {
-            // TODO change it
-            System.err.println("Some error happened while exporting");
-            throw new RuntimeException(e);
-        }
-    }
-
     private static void setupImageEditor(String path) {
-        imageEditor = new ImageEditor(importImage(path));
+        imageEditor = new ImageEditor(ImageUtils.importImage(path));
     }
 
     public static void main(String[] args) {
         System.out.println("Start program");
         setupImageEditor("beer");
-        Point[] points = new Point[6];
-        // TODO add checks to size
-        points[0] = new Point(250, 30);
-        points[1] = new Point(100, 200);
-        points[2] = new Point(100, 340);
-        points[3] = new Point(250, 200);
-        points[4] = new Point(400, 340);
-        points[5] = new Point(400, 200);
-/*        points[0] = new Point(196,360 - 114);
-        points[1] = new Point(186,360 - 182);
-        points[2] = new Point(200,360 - 250);
-        points[3] = new Point(255,360 - 255);
-        points[4] = new Point(277,360 - 204);
-        points[5] = new Point(310,360 - 156);
-        points[6] = new Point(338,360 - 112);
-        points[7] = new Point(275,360 - 74);
-        points[8] = new Point(215,360 - 95);*/
-        imageEditor.fillPolygon(points, importImage("penguins"));
-        exportImage("result");
+
+        Instant startTime = Instant.now();
+//        imageEditor.fillPolygon(new Convex(new Point(0,0), new Point(9000,0),
+//                new Point(9000,9000), new Point(0,9000)), ImageUtils.importImage("red"));
+//        imageEditor.fillPolygon(new Convex(new Point(12,2), new Point(21,12),
+//                new Point(12,21), new Point(5,12)), ImageUtils.importImage("red"));
+        imageEditor.fillPolygon(Convex.importConvex("convex.ser"), ImageUtils.importImage("penguins"));
+        Instant endTime = Instant.now();
+        Duration timeElapsed = Duration.between(startTime, endTime);
+        System.out.println("Time taken: "+ timeElapsed.toMillis() +" milliseconds");
+
+        ImageUtils.exportImage("result", imageEditor.getImage());
         System.out.println("End");
     }
 }

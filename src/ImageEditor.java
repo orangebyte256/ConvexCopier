@@ -3,42 +3,75 @@ import java.util.*;
 import java.util.function.BiConsumer;
 
 public class ImageEditor {
-    private BufferedImage image;
+    final private BufferedImage image;
 
     public ImageEditor(BufferedImage image) {
         this.image = image;
     }
 
-    public void fillPolygon(Point[] coords, BufferedImage pattern) {
-        ArrayList<Line> lines = new ArrayList<>();
-        for (int i = 0; i < coords.length; i++) {
-            Point cur = coords[i];
-            Point next = coords[(i + 1) % coords.length];
-            lines.add(new Line(cur, next));
-        }
+    public void fillPolygon(Convex convex, BufferedImage pattern) {
+        int[][] visited = new int[image.getHeight()][image.getWidth()];
+        convex.getLines().forEach(line -> {
+            int width = Math.abs(line.first.x - line.second.x);
+            int height = Math.abs(line.first.y - line.second.y);
+            if (width > height) {
+                int left = Math.min(line.first.x, line.second.x);
+                int right = Math.max(line.first.x, line.second.x);
+                for (double x = left; x <= right; x += 0.5) {
+                    int y = line.getYByX(x);
+                    visited[y][(int)x] = 1;
+                }
+            } else {
+                int bottom = Math.min(line.first.y, line.second.y);
+                int up = Math.max(line.first.y, line.second.y);
+                for (double y = bottom; y <= up; y += 0.5) {
+                    int x = line.getXByY(y);
+                    visited[(int)y][x] = 1;
+                }
+            }
+        });
 
+        Point start = new Point((convex.enclosingMaxPoint().x + convex.enclosingMinPoint().x) / 2,
+                (convex.enclosingMaxPoint().y + convex.enclosingMinPoint().y) / 2);
+        Queue<Point> queue = new LinkedList<>();
+        queue.add(start);
+        while (!queue.isEmpty()) {
+            Point point = queue.poll();
+            int x = point.x;
+            int y = point.y;
+            if (x == -1 || x == pattern.getWidth() || y == -1 || y == pattern.getHeight()) {
+                continue;
+            }
+            if (visited[y][x] == 1) {
+                continue;
+            }
+            image.setRGB(x, y, pattern.getRGB(x, y));
+            visited[y][x] = 1;
+            queue.add(new Point(x + 1, y));
+            queue.add(new Point(x - 1, y));
+            queue.add(new Point(x, y + 1));
+            queue.add(new Point(x, y - 1));
+        }
+        System.out.println("1");
+    }
+
+    public void fillPolygon1(Convex convex, BufferedImage pattern) {
         HashMap<Integer, ArrayList<Line>> linesPerHorizonUpperPoint = new HashMap<>();
         HashMap<Integer, ArrayList<Line>> linesPerHorizonBottomPoint = new HashMap<>();
-        lines.forEach(line -> {
+        convex.getLines().forEach(line -> {
             BiConsumer<HashMap<Integer, ArrayList<Line>>, Integer> addValueToMap = (map, y) -> {
                 map.putIfAbsent(y, new ArrayList<>());
                 map.get(y).add(line);
             };
-            addValueToMap.accept(linesPerHorizonUpperPoint, line.first.y);
-            addValueToMap.accept(linesPerHorizonBottomPoint, line.second.y);
+            addValueToMap.accept(linesPerHorizonUpperPoint, Math.max(line.first.y, line.second.y));
+            addValueToMap.accept(linesPerHorizonBottomPoint, Math.min(line.first.y, line.second.y));
         });
 
-        int minX = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, minY = Integer.MAX_VALUE, maxY = Integer.MIN_VALUE;
-        for (Point point : coords) {
-            minX = Math.min(minX, point.x);
-            maxX = Math.max(maxX, point.x);
-            minY = Math.min(minY, point.y);
-            maxY = Math.max(maxY, point.y);
-        }
-
+        Point enclosingMinPoint = convex.enclosingMinPoint();
+        Point enclosingMaxPoint = convex.enclosingMaxPoint();
         HashSet<Line> crossingSet = new HashSet<>();
-        for (int y = maxY; y >= minY; y--) {
-            Line horizon = new Line(new Point(minX, y), new Point(maxX, y));
+        for (int y = enclosingMaxPoint.y; y >= enclosingMinPoint.y; y--) {
+            Line horizon = new Line(new Point(enclosingMinPoint.x, y), new Point(enclosingMaxPoint.x, y));
             if (linesPerHorizonUpperPoint.containsKey(y)) {
                 crossingSet.addAll(linesPerHorizonUpperPoint.get(y));
             }
@@ -52,9 +85,9 @@ public class ImageEditor {
             while (iter.hasNext()) {
                 int left = iter.next();
                 int right = iter.next();
-                for (int x = left; x < right; x++) {
-                    image.setRGB(x, y, pattern.getRGB(x, y));
-                }
+                int length = right - left;
+                int[] pixels = pattern.getRGB(left, y, length, 1, null, 0, length);
+                image.setRGB(left, y, length, 1, pixels, 0, 0);
             }
         }
     }
