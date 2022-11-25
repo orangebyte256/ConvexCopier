@@ -1,10 +1,13 @@
-package main.java.com.orangebyte256.convexcopier.convexcopier;
+package com.orangebyte256.convexcopier.convexcopier;
 
-import main.java.com.orangebyte256.convexcopier.common.Convex;
-import main.java.com.orangebyte256.convexcopier.common.Line;
-import main.java.com.orangebyte256.convexcopier.common.Point;
+import com.orangebyte256.convexcopier.common.Convex;
+import com.orangebyte256.convexcopier.common.ImageUtils;
+import com.orangebyte256.convexcopier.common.Line;
+import com.orangebyte256.convexcopier.common.Point;
 
 import java.awt.image.BufferedImage;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.BiConsumer;
 
@@ -15,7 +18,7 @@ public class ImageEditor {
         this.image = image;
     }
 
-    public void fillPolygon(Convex convex, BufferedImage pattern) {
+    public void fillPolygonBFS(Convex convex, BufferedImage pattern) {
         int[][] visited = new int[image.getHeight()][image.getWidth()];
         convex.getLines().forEach(line -> {
             Point first = line.getFirst(), second = line.getSecond();
@@ -24,16 +27,16 @@ public class ImageEditor {
             if (width > height) {
                 int left = Math.min(first.x, second.x);
                 int right = Math.max(first.x, second.x);
-                for (double x = left; x <= right; x += 0.5) {
+                for (int x = left; x <= right; x++) {
                     int y = line.getYByX(x);
-                    visited[y][(int)x] = 1;
+                    visited[y][x] = 1;
                 }
             } else {
                 int bottom = Math.min(first.y, second.y);
                 int up = Math.max(first.y, second.y);
-                for (double y = bottom; y <= up; y += 0.5) {
+                for (int y = bottom; y <= up; y++) {
                     int x = line.getXByY(y);
-                    visited[(int)y][x] = 1;
+                    visited[y][x] = 1;
                 }
             }
         });
@@ -59,10 +62,9 @@ public class ImageEditor {
             queue.add(new Point(x, y + 1));
             queue.add(new Point(x, y - 1));
         }
-        System.out.println("1");
     }
 
-    public void fillPolygon1(Convex convex, BufferedImage pattern) {
+    public void fillPolygon(Convex convex, BufferedImage pattern) {
         HashMap<Integer, ArrayList<Line>> linesPerHorizonUpperPoint = new HashMap<>();
         HashMap<Integer, ArrayList<Line>> linesPerHorizonBottomPoint = new HashMap<>();
         convex.getLines().forEach(line -> {
@@ -103,4 +105,22 @@ public class ImageEditor {
     public BufferedImage getImage() {
         return image;
     }
+
+    public static void main(String[] args) {
+        System.out.println("Start program");
+        final String imagePath = "green";
+        final String coordsPath = "convex.ser";
+        final String patternPath = "penguins";
+        ImageEditor imageEditor = new ImageEditor(ImageUtils.importImage(imagePath));
+
+        Instant startTime = Instant.now();
+        imageEditor.fillPolygon(Convex.importConvex(coordsPath), ImageUtils.importImage(patternPath));
+        Instant endTime = Instant.now();
+        Duration timeElapsed = Duration.between(startTime, endTime);
+        System.out.println("Time taken: "+ timeElapsed.toMillis() +" milliseconds");
+
+        ImageUtils.exportImage("result", imageEditor.image);
+        System.out.println("End");
+    }
+
 }

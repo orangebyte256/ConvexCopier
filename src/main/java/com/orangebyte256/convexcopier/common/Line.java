@@ -1,14 +1,16 @@
-package main.java.com.orangebyte256.convexcopier.common;
+package com.orangebyte256.convexcopier.common;
 
 import java.util.Optional;
 
 public class Line {
     private final Point first, second;
     // Ax + By + C = 0
-    private final double A, B, C;
+    private final int A, B, C;
     // TODO override hash
     // TODO think more
     public Line (Point first, Point second) {
+        assert first.x != second.x || first.y != second.y;
+
         this.first = first;
         this.second = second;
         A = first.y - second.y;
@@ -30,8 +32,8 @@ public class Line {
     }
 
     public Optional<Point> findCross(Line other) {
-        int x = (int)((this.B * other.C - other.B * this.C) / (this.A * other.B - other.A * this.B));
-        int y = (int)((this.C * other.A - other.C * this.A) / (this.A * other.B - other.A * this.B));
+        int x = ((this.B * other.C - other.B * this.C) / (this.A * other.B - other.A * this.B));
+        int y = ((this.C * other.A - other.C * this.A) / (this.A * other.B - other.A * this.B));
         Point result = new Point(x, y);
         if (this.isPointInsideLineBox(result) && other.isPointInsideLineBox(result)) {
             return Optional.of(result);
@@ -39,13 +41,30 @@ public class Line {
         return Optional.empty();
     }
 
-    public int getYByX(double x) {
+    public int getYByX(int x) {
         assert B != 0.0;
-        return (int)(-(C + A * x) / B);
+        return (-(C + A * x) / B);
     }
 
-    public int getXByY(double y) {
+    public int getXByY(int y) {
         assert A != 0.0;
-        return (int)(-(C + B * y) / A);
+        return (-(C + B * y) / A);
+    }
+
+    public int length() {
+        return (int)Math.sqrt(Math.pow(first.x - second.x, 2.0) + Math.pow(first.y - second.y, 2.0));
+    }
+
+    // Methods for testing purpose
+    protected int getA() {
+        return A;
+    }
+
+    protected int getB() {
+        return B;
+    }
+
+    protected int getC() {
+        return C;
     }
 }

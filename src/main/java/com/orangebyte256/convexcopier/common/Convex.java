@@ -1,4 +1,4 @@
-package main.java.com.orangebyte256.convexcopier.common;
+package com.orangebyte256.convexcopier.common;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -11,10 +11,7 @@ public class Convex implements Serializable {
     final List<Point> points;
     final private Point enclosingMinPoint;
     final private Point enclosingMaxPoint;
-
-    public Convex(Point... points) {
-        this(Arrays.asList(points));
-    }
+    final private ArrayList<Line> lines = new ArrayList<>();
 
     public Convex(List<Point> points) {
         this.points = points;
@@ -26,6 +23,11 @@ public class Convex implements Serializable {
             enclosingMaxPoint.x = Math.max(enclosingMaxPoint.x, point.x);
             enclosingMaxPoint.y = Math.max(enclosingMaxPoint.y, point.y);
         });
+        for (int i = 0; i < points.size(); i++) {
+            Point cur = points.get(i);
+            Point next = points.get((i + 1) % points.size());
+            lines.add(new Line(cur, next));
+        }
     }
 
     public Point enclosingMaxPoint() {
@@ -36,12 +38,6 @@ public class Convex implements Serializable {
         return new Point(enclosingMinPoint);
     }
     public ArrayList<Line> getLines() {
-        ArrayList<Line> lines = new ArrayList<>();
-        for (int i = 0; i < points.size(); i++) {
-            Point cur = points.get(i);
-            Point next = points.get((i + 1) % points.size());
-            lines.add(new Line(cur, next));
-        }
         return lines;
     }
 
@@ -67,5 +63,9 @@ public class Convex implements Serializable {
             System.err.println("Import of file with vertex was failed");
             throw new RuntimeException(e);
         }
+    }
+
+    public int calcPerimeter() {
+        return lines.stream().mapToInt(Line::length).sum();
     }
 }

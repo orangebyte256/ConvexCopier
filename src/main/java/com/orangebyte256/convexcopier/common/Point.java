@@ -1,4 +1,4 @@
-package main.java.com.orangebyte256.convexcopier.common;
+package com.orangebyte256.convexcopier.common;
 
 public class Point {
     public int x, y;

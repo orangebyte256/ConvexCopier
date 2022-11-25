@@ -1,9 +1,9 @@
-package main.java.com.orangebyte256.convexcopier.pointcreator;
+package com.orangebyte256.convexcopier.pointcreator;
 
-import main.java.com.orangebyte256.convexcopier.common.Convex;
-import main.java.com.orangebyte256.convexcopier.common.ImageUtils;
-import main.java.com.orangebyte256.convexcopier.common.Line;
-import main.java.com.orangebyte256.convexcopier.common.Point;
+import com.orangebyte256.convexcopier.common.Convex;
+import com.orangebyte256.convexcopier.common.ImageUtils;
+import com.orangebyte256.convexcopier.common.Line;
+import com.orangebyte256.convexcopier.common.Point;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,7 +23,6 @@ public class PointCreator extends JLabel {
     }
 
     class MouseListenerImpl implements MouseListener {
-
         @Override
         public void mousePressed(MouseEvent e) {
             Point curPoint = new Point(e.getX(), e.getY());
@@ -53,7 +52,6 @@ public class PointCreator extends JLabel {
     }
 
     class KeyListenerImpl implements KeyListener {
-
         @Override
         public void keyPressed(KeyEvent e) {
             switch (e.getKeyCode()) {
