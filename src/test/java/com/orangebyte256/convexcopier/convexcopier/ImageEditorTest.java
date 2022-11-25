@@ -3,6 +3,7 @@ package com.orangebyte256.convexcopier.convexcopier;
 import com.orangebyte256.convexcopier.common.Convex;
 import com.orangebyte256.convexcopier.common.ImageUtils;
 import com.orangebyte256.convexcopier.common.Point;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -17,8 +18,14 @@ class ImageEditorTest {
     final String imagePath = "green";
     final String patternPath = "penguins";
     BufferedImage pattern = ImageUtils.importImage(patternPath);
-    final ImageEditor imageEditorFirst = new ImageEditor(ImageUtils.importImage(imagePath));
-    final ImageEditor imageEditorSecond = new ImageEditor(ImageUtils.importImage(imagePath));
+    ImageEditor imageEditorOriginal = null;
+    ImageEditor imageEditorOnPattern = null;
+
+    @BeforeEach
+    void setup() {
+        imageEditorOriginal = new ImageEditor(ImageUtils.importImage(imagePath));
+        imageEditorOnPattern = new ImageEditor(ImageUtils.importImage(patternPath));
+    }
 
     private void compareFillPolygon(List<Integer> list, List<Integer> inside) {
         assert list.size() % 2 == 0;
@@ -38,11 +45,11 @@ class ImageEditorTest {
     private void compareFillPolygon(Convex convex, List<Integer> inside) {
         assert inside.size() == 2;
 
-        imageEditorFirst.fillPolygon(convex, pattern);
-        imageEditorSecond.fillPolygonBFS(convex, pattern, new Point(inside.get(0), inside.get(1)));
-        int diff = ImageUtils.compareImage(imageEditorFirst.getImage(), imageEditorSecond.getImage());
-        assertNotEquals(diff, -1);
-        assertTrue(diff < convex.calcPerimeter());
+        imageEditorOriginal.fillPolygon(convex, pattern);
+        imageEditorOnPattern.fillPolygonBFS(convex, imageEditorOriginal.getImage(),
+                new Point(inside.get(0), inside.get(1)));
+        int diff = ImageUtils.compareImage(imageEditorOnPattern.getImage(), pattern);
+        assertEquals(0, diff);
     }
 
     @Test

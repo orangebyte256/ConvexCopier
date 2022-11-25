@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class ImageEditor {
     final private BufferedImage image;
@@ -20,6 +21,16 @@ public class ImageEditor {
 
     public void fillPolygonBFS(Convex convex, BufferedImage pattern, Point inside) {
         int[][] visited = new int[image.getHeight()][image.getWidth()];
+        Consumer<Point> markVisited = ((p) -> {
+            for (int y = p.y - 1; y <= p.y + 1; y++) {
+                for (int x = p.x - 1; x <= p.x + 1; x++) {
+                    if (0 <= x && x <= image.getWidth() && 0 <= y && y <= image.getHeight()) {
+                        visited[y][x] = 1;
+                    }
+                }
+            }
+        });
+
         convex.getLines().forEach(line -> {
             Point first = line.getFirst(), second = line.getSecond();
             int width = Math.abs(first.x - second.x);
@@ -29,14 +40,14 @@ public class ImageEditor {
                 int right = Math.max(first.x, second.x);
                 for (int x = left; x <= right; x++) {
                     int y = line.getYByX(x);
-                    visited[y][x] = 1;
+                    markVisited.accept(new Point(x, y));
                 }
             } else {
                 int bottom = Math.min(first.y, second.y);
                 int up = Math.max(first.y, second.y);
                 for (int y = bottom; y <= up; y++) {
                     int x = line.getXByY(y);
-                    visited[y][x] = 1;
+                    markVisited.accept(new Point(x, y));
                 }
             }
         });
