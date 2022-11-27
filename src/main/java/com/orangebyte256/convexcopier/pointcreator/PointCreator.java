@@ -1,7 +1,7 @@
 package com.orangebyte256.convexcopier.pointcreator;
 
 import com.orangebyte256.convexcopier.common.Convex;
-import com.orangebyte256.convexcopier.common.ImageUtils;
+import com.orangebyte256.convexcopier.common.Utils;
 import com.orangebyte256.convexcopier.common.Line;
 import com.orangebyte256.convexcopier.common.Point;
 
@@ -11,6 +11,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 public class PointCreator extends JLabel {
@@ -18,8 +19,12 @@ public class PointCreator extends JLabel {
     Boolean isFinished = false;
     final JFrame frame;
 
-    void updateFrame() {
+    private void updateFrame() {
         SwingUtilities.updateComponentTreeUI(PointCreator.this);
+    }
+
+    private static void exit() {
+        System.exit(0);
     }
 
     class MouseListenerImpl implements MouseListener {
@@ -27,9 +32,12 @@ public class PointCreator extends JLabel {
         public void mousePressed(MouseEvent e) {
             Point curPoint = new Point(e.getX(), e.getY());
             if (points.size() > 1) {
+                if (points.get(points.size() - 1).equals(curPoint)) {
+                    return;
+                }
                 Line newLine = new Line(points.get(points.size() - 1), curPoint);
                 for (int i = 1; i < points.size() - 1; i++) {
-                    if ((new Line(points.get(i - 1), points.get(i))).findCross(newLine).isPresent()) {
+                    if ((new Line(points.get(i - 1), points.get(i))).findCrossPoint(newLine).isPresent()) {
                         return;
                     }
                 }
@@ -59,11 +67,15 @@ public class PointCreator extends JLabel {
                     if (points.size() < 3) {
                         JOptionPane.showMessageDialog(PointCreator.this, "Please, choose more than two points");
                     } else {
+                        if (!Convex.isPointsFits(points)) {
+                            JOptionPane.showMessageDialog(PointCreator.this, "Points cannot form correct polygon");
+                            break;
+                        }
                         isFinished = true;
                         updateFrame();
                         JOptionPane.showMessageDialog(PointCreator.this, "Operation done successfully");
                         (new Convex(points)).export("convex.ser");
-                        System.exit(0);
+                        exit();
                     }
                     break;
                 case KeyEvent.VK_ESCAPE:
@@ -96,8 +108,8 @@ public class PointCreator extends JLabel {
         }
     }
 
-    PointCreator(String path) {
-        super(new ImageIcon(ImageUtils.importImage(path)));
+    PointCreator(BufferedImage image) {
+        super(new ImageIcon(image));
         addMouseListener(new MouseListenerImpl());
 
         frame = new JFrame();
@@ -105,10 +117,18 @@ public class PointCreator extends JLabel {
         frame.pack();
         frame.setVisible(true);
         frame.addKeyListener(new KeyListenerImpl());
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Already there
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
     }
 
     public static void main(String[] args) {
-        new PointCreator("penguins");
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        BufferedImage image = Utils.importImage("penguins");
+        if (image.getWidth() >= screenSize.getWidth() || image.getHeight() >= screenSize.getHeight()) {
+            JOptionPane.showMessageDialog(null, "Image too big, choose another one");
+            exit();
+        }
+        new PointCreator(image);
     }
 
 }

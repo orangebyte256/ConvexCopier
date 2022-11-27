@@ -1,16 +1,16 @@
 package com.orangebyte256.convexcopier.convexcopier;
 
 import com.orangebyte256.convexcopier.common.Convex;
-import com.orangebyte256.convexcopier.common.ImageUtils;
+import com.orangebyte256.convexcopier.common.Utils;
 import com.orangebyte256.convexcopier.common.Line;
 import com.orangebyte256.convexcopier.common.Point;
 
 import java.awt.image.BufferedImage;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+
+import static com.orangebyte256.convexcopier.common.Utils.runWithTimeMeasurement;
 
 public class ImageEditor {
     final private BufferedImage image;
@@ -19,12 +19,18 @@ public class ImageEditor {
         this.image = image;
     }
 
+    private Boolean convexFits(Convex convex) {
+        return convex.enclosingMaxPoint().x < image.getWidth() && convex.enclosingMaxPoint().y < image.getHeight();
+    }
+
     public void fillPolygonBFS(Convex convex, BufferedImage pattern, Point inside) {
+        assert convexFits(convex);
+
         int[][] visited = new int[image.getHeight()][image.getWidth()];
         Consumer<Point> markVisited = ((p) -> {
             for (int y = p.y - 1; y <= p.y + 1; y++) {
                 for (int x = p.x - 1; x <= p.x + 1; x++) {
-                    if (0 <= x && x <= image.getWidth() && 0 <= y && y <= image.getHeight()) {
+                    if (0 <= x && x < image.getWidth() && 0 <= y && y < image.getHeight()) {
                         visited[y][x] = 1;
                     }
                 }
@@ -74,6 +80,8 @@ public class ImageEditor {
     }
 
     public void fillPolygon(Convex convex, BufferedImage pattern) {
+        assert convexFits(convex);
+
         HashMap<Integer, ArrayList<Line>> linesPerHorizonUpperPoint = new HashMap<>();
         HashMap<Integer, ArrayList<Line>> linesPerHorizonBottomPoint = new HashMap<>();
         convex.getLines().forEach(line -> {
@@ -90,14 +98,14 @@ public class ImageEditor {
         Point enclosingMaxPoint = convex.enclosingMaxPoint();
         HashSet<Line> crossingSet = new HashSet<>();
         for (int y = enclosingMaxPoint.y; y >= enclosingMinPoint.y; y--) {
-            Line horizon = new Line(new Point(enclosingMinPoint.x, y), new Point(enclosingMaxPoint.x, y));
+            final int yFinal = y;
             if (linesPerHorizonUpperPoint.containsKey(y)) {
                 crossingSet.addAll(linesPerHorizonUpperPoint.get(y));
             }
             if (linesPerHorizonBottomPoint.containsKey(y)) {
                 crossingSet.removeAll(linesPerHorizonBottomPoint.get(y));
             }
-            List<Integer> crossPoints = crossingSet.stream().map(horizon::findCross).map(p -> p.get().x).sorted().toList();
+            List<Integer> crossPoints = crossingSet.stream().map(l -> l.getXByY(yFinal)).sorted().toList();
             assert (crossPoints.size() % 2) == 0;
 
             Iterator<Integer> iter = crossPoints.iterator();
@@ -116,19 +124,16 @@ public class ImageEditor {
     }
 
     public static void main(String[] args) {
-        System.out.println("Start program");
-        final String imagePath = "green";
+        System.out.println("Start Convex Copier");
         final String coordsPath = "convex.ser";
         final String patternPath = "penguins";
-        ImageEditor imageEditor = new ImageEditor(ImageUtils.importImage(imagePath));
+        final String imagePath = "green";
+        ImageEditor imageEditor = new ImageEditor(Utils.importImage(imagePath));
 
-        Instant startTime = Instant.now();
-        imageEditor.fillPolygonBFS(Convex.importConvex(coordsPath), ImageUtils.importImage(patternPath), new Point(350, 260));
-        Instant endTime = Instant.now();
-        Duration timeElapsed = Duration.between(startTime, endTime);
-        System.out.println("Time taken: "+ timeElapsed.toMillis() +" milliseconds");
+        runWithTimeMeasurement(() ->
+                imageEditor.fillPolygon(Convex.importConvex(coordsPath), Utils.importImage(patternPath)), "Original");
 
-        ImageUtils.exportImage("result", imageEditor.image);
+        Utils.exportImage("result", imageEditor.image);
         System.out.println("End");
     }
 

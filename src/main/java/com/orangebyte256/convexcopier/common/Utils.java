@@ -4,12 +4,15 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
 
-public class ImageUtils {
+public class Utils {
     public static void exportImage(String path, BufferedImage image) {
-        File outputfile = new File(path + ".png");
+        File outputfile = new File(path + ".jpg");
         try {
-            ImageIO.write(image, "png", outputfile);
+            ImageIO.write(image, "jpg", outputfile);
         } catch (IOException e) {
             // TODO change it
             System.err.println("Some error happened while exporting");
@@ -18,7 +21,7 @@ public class ImageUtils {
     }
 
     public static BufferedImage importImage(String path) {
-        File img = new File(path + ".png");
+        File img = new File(path + ".jpg");
         try {
             return ImageIO.read(img);
         } catch (IOException e) {
@@ -42,4 +45,23 @@ public class ImageUtils {
         }
         return result;
     }
+
+    public static BufferedImage createColorImage(int color, int width, int height) {
+        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        int[] pixels = new int[width];
+        Arrays.fill(pixels, color);
+        for (int y = 0; y < height; y++) {
+            result.setRGB(0, y, width, 1, pixels, 0, 0);
+        }
+        return result;
+    }
+
+    public static void runWithTimeMeasurement(Runnable action, String info) {
+        Instant startTime = Instant.now();
+        action.run();
+        Instant endTime = Instant.now();
+        Duration timeElapsed = Duration.between(startTime, endTime);
+        System.out.println("Time taken for " + info + ": "+ timeElapsed.toMillis() +" milliseconds");
+    }
+
 }

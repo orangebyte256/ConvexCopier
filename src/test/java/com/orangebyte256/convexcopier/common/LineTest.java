@@ -9,11 +9,12 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class LineTest {
+    private static final double FUZZ_FACTOR = 0.0001;
     private void checkLineCoefficient(List<Integer> coords, List<Integer> answer) {
         Line cur = new Line(new Point(coords.get(0),coords.get(1)), new Point(coords.get(2),coords.get(3)));
-        assertEquals(cur.getA(), answer.get(0));
-        assertEquals(cur.getB(), answer.get(1));
-        assertEquals(cur.getC(), answer.get(2));
+        assertEquals(cur.getA(), (double)answer.get(0), FUZZ_FACTOR);
+        assertEquals(cur.getB(), (double)answer.get(1), FUZZ_FACTOR);
+        assertEquals(cur.getC(), (double)answer.get(2), FUZZ_FACTOR);
     }
 
     @Test
@@ -37,7 +38,7 @@ class LineTest {
                 new Point(firstCoords.get(2),firstCoords.get(3)));
         Line second = new Line(new Point(secondCoords.get(0),secondCoords.get(1)),
                 new Point(secondCoords.get(2),secondCoords.get(3)));
-        Optional<Point> cross = first.findCross(second);
+        Optional<Point> cross = first.findCrossPoint(second);
         assertEquals(cross.isPresent(), answer != null);
         if (answer != null) {
             assert cross.isPresent();
