@@ -55,6 +55,9 @@ class LineTest {
         checkLineCrossing(List.of(0, 0, 25, 50), List.of(25, 50, 50, 0), List.of(25, 50));
 
         checkLineCrossing(List.of(0, 0, 50, 50), List.of(100, 150, 150, 100), null);
+        checkLineCrossing(List.of(0, 0, 50, 0), List.of(25, 0, 50, 0), null);
+        checkLineCrossing(List.of(0, 0, 50, 0), List.of(100, 0, 150, 0), null);
+        checkLineCrossing(List.of(0, 0, 25, 0), List.of(25, 0, 50, 0), List.of(25, 0));
     }
 
     @Test

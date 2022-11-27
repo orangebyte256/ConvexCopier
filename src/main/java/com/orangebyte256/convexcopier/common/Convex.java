@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Convex implements Serializable {
+public class Convex {
     final List<Point> points;
     final private Point enclosingMinPoint;
     final private Point enclosingMaxPoint;

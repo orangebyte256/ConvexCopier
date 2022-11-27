@@ -6,7 +6,10 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 public class Utils {
     public static void exportImage(String path, BufferedImage image) {
@@ -64,4 +67,14 @@ public class Utils {
         System.out.println("Time taken for " + info + ": "+ timeElapsed.toMillis() +" milliseconds");
     }
 
+    public static List<Point> integersToPoints(Integer... list) {
+        assert list.length % 2 == 0;
+
+        Iterator<Integer> iter = Arrays.stream(list).iterator();
+        ArrayList<Point> points = new ArrayList<>();
+        while (iter.hasNext()) {
+            points.add(new Point(iter.next(), iter.next()));
+        }
+        return points;
+    }
 }

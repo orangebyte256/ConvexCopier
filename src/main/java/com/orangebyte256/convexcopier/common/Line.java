@@ -31,32 +31,30 @@ public class Line {
                 Math.min(this.first.y, this.second.y) <= point.y && point.y <= Math.max(this.first.y, this.second.y));
     }
 
-    private Boolean isPointInsideLineBoxStrong(Point point) {
-        return (Math.min(this.first.x, this.second.x) < point.x && point.x < Math.max(this.first.x, this.second.x) &&
-                Math.min(this.first.y, this.second.y) < point.y && point.y < Math.max(this.first.y, this.second.y));
-    }
-
     private Boolean pointOnLine(Point p) {
-        // TODO change it
-        return A * p.x + B * p.y + C == 0;
+        return Math.abs(A * p.x + B * p.y + C) < 0.0001;
     }
 
     public Optional<Point> findCrossPoint(Line other) {
         if (pointOnLine(other.first) && pointOnLine(other.second)) {
-            if (this.isPointInsideLineBoxStrong(other.first) || this.isPointInsideLineBoxStrong(other.second) ||
-                    other.isPointInsideLineBoxStrong(this.first) || other.isPointInsideLineBoxStrong(this.second)) {
+            int fits = 0;
+            fits += this.isPointInsideLineBox(other.first) ? 1 : 0;
+            fits += this.isPointInsideLineBox(other.second) ? 1 : 0;
+            fits += other.isPointInsideLineBox(this.first) ? 1 : 0;
+            fits += other.isPointInsideLineBox(this.second) ? 1 : 0;
+            if (fits > 2 || fits == 0) {
                 return Optional.empty();
             }
-            if (this.isPointInsideLineBox(other.first) && this.isPointInsideLineBox(other.second)) {
-                return Optional.empty();
+            if (this.first.equals(other.first) || this.first.equals(other.second) ||
+                    this.second.equals(other.first) || this.second.equals(other.second)) {
+                if (this.isPointInsideLineBox(other.first)) {
+                    return Optional.of(other.getFirst());
+                }
+                if (this.isPointInsideLineBox(other.second)) {
+                    return Optional.of(other.getSecond());
+                }
             }
-            if (this.isPointInsideLineBox(other.first)) {
-                return Optional.of(other.getFirst());
-            }
-            if (this.isPointInsideLineBox(other.second)) {
-                return Optional.of(other.getSecond());
-            }
-            assert false; // Should not reach here
+            return Optional.empty();
         }
         int x = (int)((this.B * other.C - other.B * this.C) / (this.A * other.B - other.A * this.B));
         int y = (int)((this.C * other.A - other.C * this.A) / (this.A * other.B - other.A * this.B));
