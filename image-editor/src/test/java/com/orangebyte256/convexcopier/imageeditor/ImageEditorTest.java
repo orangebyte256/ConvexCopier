@@ -1,4 +1,4 @@
-package com.orangebyte256.convexcopier.convexcopier;
+package com.orangebyte256.convexcopier.imageeditor;
 
 import com.orangebyte256.convexcopier.common.Convex;
 import com.orangebyte256.convexcopier.common.Utils;

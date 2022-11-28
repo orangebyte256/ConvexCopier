@@ -73,11 +73,11 @@ public class Utils {
         System.out.println("Time taken for " + info + ": "+ timeElapsed.toMillis() +" milliseconds");
     }
 
-    public static List<Point> integersToPoints(Integer... list) {
+    public static List<com.orangebyte256.convexcopier.common.Point> integersToPoints(Integer... list) {
         assert list.length % 2 == 0;
 
         Iterator<Integer> iter = Arrays.stream(list).iterator();
-        ArrayList<Point> points = new ArrayList<>();
+        ArrayList<com.orangebyte256.convexcopier.common.Point> points = new ArrayList<>();
         while (iter.hasNext()) {
             points.add(new Point(iter.next(), iter.next()));
         }

@@ -72,6 +72,7 @@ public class Convex {
         try (PrintWriter out = new PrintWriter(path)) {
             String format = points.stream().map(Object::toString).collect(Collectors.joining(","));
             out.print(format);
+            out.flush();
         } catch (FileNotFoundException e) {
             System.err.println("Export of file with vertex was failed");
             throw new RuntimeException(e);

@@ -1,7 +1,6 @@
-package com.orangebyte256.convexcopier.pointcreator;
+package com.orangebyte256.convexcopier.imageeditor;
 
 import com.orangebyte256.convexcopier.common.Convex;
-import com.orangebyte256.convexcopier.common.Utils;
 import com.orangebyte256.convexcopier.common.Line;
 import com.orangebyte256.convexcopier.common.Point;
 
@@ -18,13 +17,10 @@ public class PointCreator extends JLabel {
     ArrayList<Point> points = new ArrayList<>();
     Boolean isFinished = false;
     final JFrame frame;
+    final String output;
 
     private void updateFrame() {
         SwingUtilities.updateComponentTreeUI(PointCreator.this);
-    }
-
-    private static void exit() {
-        System.exit(0);
     }
 
     class MouseListenerImpl implements MouseListener {
@@ -74,8 +70,8 @@ public class PointCreator extends JLabel {
                         isFinished = true;
                         updateFrame();
                         JOptionPane.showMessageDialog(PointCreator.this, "Operation done successfully");
-                        (new Convex(points)).export("convex.ser");
-                        exit();
+                        (new Convex(points)).export(output);
+                        System.exit(0);
                     }
                     break;
                 case KeyEvent.VK_ESCAPE:
@@ -108,27 +104,16 @@ public class PointCreator extends JLabel {
         }
     }
 
-    PointCreator(BufferedImage image) {
+    PointCreator(BufferedImage image, String output) {
         super(new ImageIcon(image));
         addMouseListener(new MouseListenerImpl());
+        this.output = output;
 
         frame = new JFrame();
         frame.setContentPane(this);
         frame.pack();
         frame.setVisible(true);
         frame.addKeyListener(new KeyListenerImpl());
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Already there
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
-
-    public static void main(String[] args) {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        BufferedImage image = Utils.importImage("penguins");
-        if (image.getWidth() >= screenSize.getWidth() || image.getHeight() >= screenSize.getHeight()) {
-            JOptionPane.showMessageDialog(null, "Image too big, choose another one");
-            exit();
-        }
-        new PointCreator(image);
-    }
-
 }
