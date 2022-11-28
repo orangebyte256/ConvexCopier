@@ -62,9 +62,21 @@ class LineTest {
 
     @Test
     void getYByX() {
+        assertEquals(new Line(new Point(0,0), new Point(10, 10)).getYByX(5), Optional.of(5));
+        assertEquals(new Line(new Point(0,0), new Point(10, 10)).getYByX(0), Optional.of(0));
+        assertEquals(new Line(new Point(0,0), new Point(10, 10)).getYByX(10), Optional.of(10));
+        assertEquals(new Line(new Point(0,0), new Point(10, 0)).getYByX(5), Optional.of(0));
+        assertEquals(new Line(new Point(0,0), new Point(10, 0)).getYByX(15), Optional.empty());
+        assertEquals(new Line(new Point(0,0), new Point(0, 10)).getYByX(5), Optional.empty());
     }
 
     @Test
     void getXByY() {
+        assertEquals(new Line(new Point(0,0), new Point(10, 10)).getXByY(5), Optional.of(5));
+        assertEquals(new Line(new Point(0,0), new Point(10, 10)).getXByY(0), Optional.of(0));
+        assertEquals(new Line(new Point(0,0), new Point(10, 10)).getXByY(10), Optional.of(10));
+        assertEquals(new Line(new Point(0,0), new Point(10, 0)).getXByY(5), Optional.empty());
+        assertEquals(new Line(new Point(0,0), new Point(10, 0)).getXByY(15), Optional.empty());
+        assertEquals(new Line(new Point(0,0), new Point(0, 10)).getXByY(5), Optional.of(0));
     }
 }

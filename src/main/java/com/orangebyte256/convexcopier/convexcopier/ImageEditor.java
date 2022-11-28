@@ -7,6 +7,7 @@ import com.orangebyte256.convexcopier.common.Point;
 
 import java.awt.image.BufferedImage;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -45,14 +46,14 @@ public class ImageEditor {
                 int left = Math.min(first.x, second.x);
                 int right = Math.max(first.x, second.x);
                 for (int x = left; x <= right; x++) {
-                    int y = line.getYByX(x);
+                    int y = line.getYByX(x).get();
                     markVisited.accept(new Point(x, y));
                 }
             } else {
                 int bottom = Math.min(first.y, second.y);
                 int up = Math.max(first.y, second.y);
                 for (int y = bottom; y <= up; y++) {
-                    int x = line.getXByY(y);
+                    int x = line.getXByY(y).get();
                     markVisited.accept(new Point(x, y));
                 }
             }
@@ -79,7 +80,7 @@ public class ImageEditor {
         }
     }
 
-    public void fillPolygon(Convex convex, BufferedImage pattern) {
+    public void fillPolygon(Convex convex, BufferedImage pattern, int parallelism) {
         assert convexFits(convex);
 
         HashMap<Integer, ArrayList<Line>> linesPerHorizonUpperPoint = new HashMap<>();
@@ -97,25 +98,48 @@ public class ImageEditor {
         Point enclosingMinPoint = convex.enclosingMinPoint();
         Point enclosingMaxPoint = convex.enclosingMaxPoint();
         HashSet<Line> crossingSet = new HashSet<>();
-        for (int y = enclosingMaxPoint.y; y >= enclosingMinPoint.y; y--) {
-            final int yFinal = y;
-            if (linesPerHorizonUpperPoint.containsKey(y)) {
-                crossingSet.addAll(linesPerHorizonUpperPoint.get(y));
-            }
-            if (linesPerHorizonBottomPoint.containsKey(y)) {
-                crossingSet.removeAll(linesPerHorizonBottomPoint.get(y));
-            }
-            List<Integer> crossPoints = crossingSet.stream().map(l -> l.getXByY(yFinal)).sorted().toList();
-            assert (crossPoints.size() % 2) == 0;
+        AtomicInteger yIter = new AtomicInteger(enclosingMaxPoint.y + 1);
+        Runnable runnable = () -> {
+            while (true) {
+                final List<Integer> crossPoints;
+                final int y;
+                synchronized (yIter) {
+                    y = yIter.addAndGet(-1);
+                    if (y <= enclosingMinPoint.y) {
+                        return;
+                    }
 
-            Iterator<Integer> iter = crossPoints.iterator();
-            while (iter.hasNext()) {
-                int left = iter.next();
-                int right = iter.next();
-                int length = right - left;
-                int[] pixels = pattern.getRGB(left, y, length, 1, null, 0, length);
-                image.setRGB(left, y, length, 1, pixels, 0, 0);
+                    if (linesPerHorizonUpperPoint.containsKey(y)) {
+                        crossingSet.addAll(linesPerHorizonUpperPoint.get(y));
+                    }
+                    if (linesPerHorizonBottomPoint.containsKey(y)) {
+                        crossingSet.removeAll(linesPerHorizonBottomPoint.get(y));
+                    }
+
+                    crossPoints = crossingSet.stream().map(l -> l.getXByY(y).get()).sorted().toList();
+                    assert (crossPoints.size() % 2) == 0;
+                }
+                Iterator<Integer> iter = crossPoints.iterator();
+                while (iter.hasNext()) {
+                    int left = iter.next();
+                    int right = iter.next();
+                    int length = right - left;
+                    int[] pixels = pattern.getRGB(left, y, length, 1, null, 0, length);
+                    image.setRGB(left, y, length, 1, pixels, 0, 0);
+                }
             }
+        };
+        try {
+            Thread[] threads = new Thread[parallelism];
+            for (int i = 0; i < parallelism; i++) {
+                threads[i] = new Thread(runnable);
+                threads[i].start();
+            }
+            for (Thread thread : threads) {
+                thread.join();
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -131,7 +155,7 @@ public class ImageEditor {
         ImageEditor imageEditor = new ImageEditor(Utils.importImage(imagePath));
 
         runWithTimeMeasurement(() ->
-                imageEditor.fillPolygon(Convex.importConvex(coordsPath), Utils.importImage(patternPath)), "Original");
+                imageEditor.fillPolygon(Convex.importConvex(coordsPath), Utils.importImage(patternPath), 4), "Original");
 
         Utils.exportImage("result", imageEditor.image);
         System.out.println("End");

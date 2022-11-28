@@ -1,6 +1,7 @@
 package com.orangebyte256.convexcopier.common;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -38,15 +39,20 @@ public class Utils {
         if (first.getWidth() != second.getWidth() || first.getHeight() != second.getHeight()) {
             return -1;
         }
-        int result = 0;
+        BufferedImage diffImage = new BufferedImage(first.getWidth(), first.getHeight(), BufferedImage.TYPE_INT_RGB);
+        int diff = 0;
         for (int y = 0; y < first.getHeight(); y++) {
             for (int x = 0; x < first.getWidth(); x++) {
                 if (first.getRGB(x, y) != second.getRGB(x, y)) {
-                    result++;
+                    diff++;
+                    diffImage.setRGB(x,y, Color.RED.getRGB());
+                } else {
+                    diffImage.setRGB(x,y, Color.BLACK.getRGB());
                 }
             }
         }
-        return result;
+        exportImage("diff", diffImage);
+        return diff;
     }
 
     public static BufferedImage createColorImage(int color, int width, int height) {

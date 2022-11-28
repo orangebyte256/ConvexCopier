@@ -65,14 +65,28 @@ public class Line {
         return Optional.empty();
     }
 
-    public int getYByX(int x) {
-        assert B != 0.0;
-        return (int)(-(C + A * x) / B);
+    public Optional<Integer> getYByX(int x) {
+        if (B == 0.0) {
+            return Optional.empty();
+        }
+
+        Point point = new Point(x, (int)(-(C + A * x) / B));
+        if (!isPointInsideLineBox(point)) {
+            return Optional.empty();
+        }
+        return Optional.of(point.y);
     }
 
-    public int getXByY(int y) {
-        assert A != 0.0;
-        return (int)(-(C + B * y) / A);
+    public Optional<Integer> getXByY(int y) {
+        if (A == 0.0) {
+            return Optional.empty();
+        }
+
+        Point point = new Point((int)(-(C + B * y) / A), y);
+        if (!isPointInsideLineBox(point)) {
+            return Optional.empty();
+        }
+        return Optional.of(point.x);
     }
 
     // Methods for testing purpose
