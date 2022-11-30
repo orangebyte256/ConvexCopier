@@ -10,7 +10,7 @@ include_directories($ENV{JAVA_HOME}/include/darwin)
 add_compile_options(-fPIC)
 
 add_library(fill_polygon_impl_cpp SHARED
-        FillPolygonImpl.cpp
-        FillPolygonImpl.h
+        FillPolygonJNI.cpp
+        FillPolygonJNI.h
         Line.h
-        Point.h Line.cpp Point.cpp)
+        Point.h Line.cpp Point.cpp FillPolygonImpl.cpp FillPolygonImpl.h)
