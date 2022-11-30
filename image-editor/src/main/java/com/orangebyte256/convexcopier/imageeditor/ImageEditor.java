@@ -81,7 +81,7 @@ public class ImageEditor {
         }
     }
 
-    public void fillPolygon(Convex convex, BufferedImage pattern, int parallelism, boolean useJNI) {
+    public void fillPolygon(Convex convex, BufferedImage pattern, int parallelism, boolean useJNI, int ancorX, int ancorY) {
         assert convexFits(convex);
 
         int[] imagePixels = ((DataBufferInt)(image.getRaster().getDataBuffer())).getData();
@@ -94,9 +94,11 @@ public class ImageEditor {
                 arrayOfPoints[i * 2] = convex.getPoints().get(i).x;
                 arrayOfPoints[i * 2 + 1] = convex.getPoints().get(i).y;
             }
-            fillPolygonImpl.fillPolygonJNI(imagePixels, image.getWidth(), arrayOfPoints, patternPixels, pattern.getWidth(), parallelism);
+            fillPolygonImpl.fillPolygonJNI(imagePixels, image.getWidth(), arrayOfPoints, patternPixels,
+                    pattern.getWidth(), parallelism, ancorX, ancorY);
         } else {
-            FillPolygonImpl.fillPolygonJava(imagePixels, image.getWidth(), convex, patternPixels, pattern.getWidth(), parallelism);
+            FillPolygonImpl.fillPolygonJava(imagePixels, image.getWidth(), convex, patternPixels,
+                    pattern.getWidth(), parallelism, ancorX, ancorY);
         }
     }
 
@@ -107,7 +109,7 @@ public class ImageEditor {
     private static void printHelpMessage() {
         System.out.println("Incorrect command. You can use:");
         System.out.println("For creation polygon: -create pattern_image outfile_for_coordinates");
-        System.out.println("For making copy: -copy source_image pattern_image coordinates_file");
+        System.out.println("For making copy: -copy source_image pattern_image coordinates_file [jni]");
     }
 
     public static void main(String[] args) {
@@ -127,13 +129,14 @@ public class ImageEditor {
                 runPointCreator(args[1], args[2]);
             }
             case "-copy" -> {
-                if (args.length != 4) {
+                if (args.length != 4 && !(args.length == 5 && args[4].equals("jni"))) {
                     printHelpMessage();
                     return;
                 }
                 ImageEditor imageEditor = new ImageEditor(Utils.importImage(args[1]));
+                boolean isJNI = args.length == 5;
                 runWithTimeMeasurement(() -> imageEditor.fillPolygon(Convex.importConvex(args[3]),
-                        Utils.importImage(args[2]), 4, true), "Original");
+                        Utils.importImage(args[2]), 4, isJNI, 200, 200), "Original");
                 Utils.exportImage("result", imageEditor.image);
             }
             default -> printHelpMessage();

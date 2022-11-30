@@ -14,8 +14,12 @@ public class FillPolygonImpl {
         System.loadLibrary("fill_polygon_impl_cpp");
     }
 
+    private static int calcOffset(int x, int y, int width) {
+        return y * width + x;
+    }
+
     public static void fillPolygonJava(int[] imagePixels, int imageWidth, Convex convex, int[] patternPixels,
-                                   int patternWidth, int parallelism) {
+                                   int patternWidth, int parallelism, int ancorX, int ancorY) {
         HashMap<Integer, ArrayList<Line>> linesPerHorizonUpperPoint = new HashMap<>();
         HashMap<Integer, ArrayList<Line>> linesPerHorizonBottomPoint = new HashMap<>();
         convex.getLines().forEach(line -> {
@@ -31,13 +35,13 @@ public class FillPolygonImpl {
         Point enclosingMinPoint = convex.enclosingMinPoint();
         Point enclosingMaxPoint = convex.enclosingMaxPoint();
         HashSet<Line> crossingSet = new HashSet<>();
-        AtomicInteger yIter = new AtomicInteger(enclosingMaxPoint.y + 1);
+        AtomicInteger yIter = new AtomicInteger(enclosingMaxPoint.y);
         Runnable runnable = () -> {
             while (true) {
                 final List<Integer> crossPoints;
                 final int y;
                 synchronized (yIter) {
-                    y = yIter.addAndGet(-1);
+                    y = yIter.getAndDecrement();
                     if (y <= enclosingMinPoint.y) {
                         return;
                     }
@@ -56,9 +60,10 @@ public class FillPolygonImpl {
                 while (iter.hasNext()) {
                     int left = iter.next();
                     int right = iter.next();
-                    if (right + 1 - left >= 0) {
-                        System.arraycopy(patternPixels, y * patternWidth + left, imagePixels, y * imageWidth + left,
-                                right + 1 - left);
+                    int length = right - left;
+                    if (length > 0) {
+                        System.arraycopy(patternPixels, calcOffset(left, y, patternWidth), imagePixels,
+                                calcOffset(left + ancorX, y + ancorY, imageWidth), length);
                     }
                 }
             }
@@ -78,6 +83,6 @@ public class FillPolygonImpl {
     }
 
     public native void fillPolygonJNI(int[] imagePixels, int imageWidth, int[] convex, int[] patternPixels,
-                                        int patternWidth, int parallelism);
+                                        int patternWidth, int parallelism, int ancorX, int ancorY);
 
 }

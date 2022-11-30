@@ -21,38 +21,54 @@ class ImageEditorTest {
     private static final int BIG_HEIGHT = 10000;
     private static final int PARALLELISM = 4;
 
-    private void compareFillPolygon(Point inside, int width, int height, Boolean needMeasurement, Integer... list) {
-        compareFillPolygon(inside, width, height, needMeasurement, new Convex(integersToPoints(list)));
+    private static Boolean isJNI = false;
+    private static Boolean needMeasurement = false;
+
+    private void compareFillPolygon(Point inside, int width, int height, Integer... list) {
+        compareFillPolygon(inside, width, height, new Convex(integersToPoints(list)));
     }
 
-    private void compareFillPolygon(Point inside, int width, int height, Boolean needMeasurement, String path) {
-        compareFillPolygon(inside, width, height, needMeasurement, Convex.importConvex(path));
+    private void compareFillPolygon(Point inside, int width, int height, String path) {
+        compareFillPolygon(inside, width, height, Convex.importConvex(path));
     }
 
-    private void compareFillPolygon(Point inside, int width, int height, Boolean needMeasurement, Convex convex) {
+    private void compareFillPolygon(Point inside, int width, int height, Convex convex) {
         ImageEditor imageEditorOriginal = new ImageEditor(Utils.createColorImage(Color.RED.getRGB(), width, height));
         ImageEditor imageEditorOnPattern = new ImageEditor(Utils.createColorImage(Color.GREEN.getRGB(), width, height));
         BufferedImage pattern = Utils.createColorImage(Color.GREEN.getRGB(), width, height);
         BiConsumer<Runnable, String> consumer = needMeasurement ? Utils::runWithTimeMeasurement : (a, b) -> a.run();
         if (needMeasurement) {
-            consumer.accept(() -> imageEditorOriginal.fillPolygon(convex, pattern, PARALLELISM, true), "Original with parallelism");
-            consumer.accept(() -> imageEditorOriginal.fillPolygon(convex, pattern, 1, true), "Original");
+            consumer.accept(() -> imageEditorOriginal.fillPolygon(convex, pattern, PARALLELISM, isJNI, 0, 0), "Original with parallelism");
+            consumer.accept(() -> imageEditorOriginal.fillPolygon(convex, pattern, 1, isJNI, 0, 0), "Original");
         } else {
-            consumer.accept(() -> imageEditorOriginal.fillPolygon(convex, pattern, PARALLELISM, true), "Original");
+            consumer.accept(() -> imageEditorOriginal.fillPolygon(convex, pattern, PARALLELISM, isJNI, 0, 0), "Original");
         }
         consumer.accept(() -> imageEditorOnPattern.fillPolygonBFS(convex, imageEditorOriginal.getImage(), inside), "BFS");
         int diff = Utils.compareImage(imageEditorOnPattern.getImage(), pattern);
         assertEquals(0, diff);
     }
 
+    void basicTestFillPolygon() {
+        needMeasurement = false;
+        compareFillPolygon(new Point(250, 250), WIDTH, HEIGHT, 0,0, 500,0, 500,500, 0,500);
+        compareFillPolygon(new Point(250, 250), WIDTH, HEIGHT, 250,0, 0,250, 250,500, 500,250);
+        compareFillPolygon(new Point(640, 340), WIDTH, HEIGHT, "test0.ser");
+        compareFillPolygon(new Point(350, 260), WIDTH, HEIGHT, "test1.ser");
+        compareFillPolygon(new Point(350, 260), WIDTH, HEIGHT, "test2.ser");
+    }
+
     @Test
-    @DisplayName("Fill polygon with pattern")
-    void fillPolygon() {
-        compareFillPolygon(new Point(250, 250), WIDTH, HEIGHT, false, 0,0, 500,0, 500,500, 0,500);
-        compareFillPolygon(new Point(250, 250), WIDTH, HEIGHT, false, 250,0, 0,250, 250,500, 500,250);
-        compareFillPolygon(new Point(640, 340), WIDTH, HEIGHT, false, "test0.ser");
-        compareFillPolygon(new Point(350, 260), WIDTH, HEIGHT, false, "test1.ser");
-        compareFillPolygon(new Point(350, 260), WIDTH, HEIGHT, false, "test2.ser");
+    @DisplayName("Fill polygon on Java implementation")
+    void basicFillPolygonJava() {
+        isJNI = false;
+        basicTestFillPolygon();
+    }
+
+    @Test
+    @DisplayName("Fill polygon on C++ implementation")
+    void basicFillPolygonCpp() {
+        isJNI = true;
+        basicTestFillPolygon();
     }
 
     private Convex createComplexConvex() {
@@ -66,17 +82,40 @@ class ImageEditorTest {
         return new Convex(points);
     }
 
-    @Test
-    @DisplayName("Fill polygon with pattern on big data with measurement")
-    void fillPolygonWIthTime() {
-        compareFillPolygon(new Point(505, 5000), BIG_WIDTH, BIG_HEIGHT, true, createComplexConvex());
-        compareFillPolygon(new Point(5000, 5000), BIG_WIDTH, BIG_HEIGHT, true, 0,0, 9999,0, 9999,9999, 0,9999);
+    void complexTestFillPolygon() {
+        compareFillPolygon(new Point(505, 5000), BIG_WIDTH, BIG_HEIGHT, createComplexConvex());
+        compareFillPolygon(new Point(5000, 5000), BIG_WIDTH, BIG_HEIGHT, 0,0, 9999,0, 9999,9999, 0,9999);
     }
 
     @Test
-    @DisplayName("Fill polygon with pattern on big data")
-    void fillPolygonBigData() {
-        compareFillPolygon(new Point(505, 5000), BIG_WIDTH, BIG_HEIGHT, false, createComplexConvex());
-        compareFillPolygon(new Point(5000, 5000), BIG_WIDTH, BIG_HEIGHT, false, 0,0, 9999,0, 9999,9999, 0,9999);
+    @DisplayName("Fill polygon big data on Java implementation")
+    void fillPolygonBigDataJava() {
+        needMeasurement = false;
+        isJNI = false;
+        complexTestFillPolygon();
+    }
+
+    @Test
+    @DisplayName("Fill polygon big data on C++ implementation")
+    void fillPolygonBigDataCpp() {
+        needMeasurement = false;
+        isJNI = true;
+        complexTestFillPolygon();
+    }
+
+    @Test
+    @DisplayName("Fill polygon big data with measurement on Java implementation")
+    void fillPolygonBigDataWithMeasurementJava() {
+        needMeasurement = true;
+        isJNI = false;
+        complexTestFillPolygon();
+    }
+
+    @Test
+    @DisplayName("Fill polygon big data with measurement on C++ implementation")
+    void fillPolygonBigDataWithMeasurementCpp() {
+        needMeasurement = true;
+        isJNI = true;
+        complexTestFillPolygon();
     }
 }
