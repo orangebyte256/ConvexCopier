@@ -35,10 +35,10 @@ class ImageEditorTest {
         BufferedImage pattern = Utils.createColorImage(Color.GREEN.getRGB(), width, height);
         BiConsumer<Runnable, String> consumer = needMeasurement ? Utils::runWithTimeMeasurement : (a, b) -> a.run();
         if (needMeasurement) {
-            consumer.accept(() -> imageEditorOriginal.fillPolygon(convex, pattern, PARALLELISM), "Original with parallelism");
-            consumer.accept(() -> imageEditorOriginal.fillPolygon(convex, pattern, 1), "Original");
+            consumer.accept(() -> imageEditorOriginal.fillPolygon(convex, pattern, PARALLELISM, true), "Original with parallelism");
+            consumer.accept(() -> imageEditorOriginal.fillPolygon(convex, pattern, 1, true), "Original");
         } else {
-            consumer.accept(() -> imageEditorOriginal.fillPolygon(convex, pattern, PARALLELISM), "Original");
+            consumer.accept(() -> imageEditorOriginal.fillPolygon(convex, pattern, PARALLELISM, true), "Original");
         }
         consumer.accept(() -> imageEditorOnPattern.fillPolygonBFS(convex, imageEditorOriginal.getImage(), inside), "BFS");
         int diff = Utils.compareImage(imageEditorOnPattern.getImage(), pattern);

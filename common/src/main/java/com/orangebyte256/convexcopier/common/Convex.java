@@ -68,6 +68,10 @@ public class Convex {
         return lines;
     }
 
+    public List<Point> getPoints() {
+        return points;
+    }
+
     public void export(String path) {
         try (PrintWriter out = new PrintWriter(path)) {
             String format = points.stream().map(Object::toString).collect(Collectors.joining(","));

@@ -27,7 +27,13 @@ public class Utils {
     public static BufferedImage importImage(String path) {
         File img = new File(path + ".jpg");
         try {
-            return ImageIO.read(img);
+            BufferedImage in = ImageIO.read(img);
+            BufferedImage result = new BufferedImage(in.getWidth(), in.getHeight(), BufferedImage.TYPE_INT_RGB);
+
+            Graphics2D g = result.createGraphics();
+            g.drawImage(in, 0, 0, in.getWidth(), in.getHeight(), null);
+            g.dispose();
+            return result;
         } catch (IOException e) {
             // TODO change it
             System.err.println("Some error happened while exporting");
@@ -39,19 +45,14 @@ public class Utils {
         if (first.getWidth() != second.getWidth() || first.getHeight() != second.getHeight()) {
             return -1;
         }
-        BufferedImage diffImage = new BufferedImage(first.getWidth(), first.getHeight(), BufferedImage.TYPE_INT_RGB);
         int diff = 0;
         for (int y = 0; y < first.getHeight(); y++) {
             for (int x = 0; x < first.getWidth(); x++) {
                 if (first.getRGB(x, y) != second.getRGB(x, y)) {
                     diff++;
-                    diffImage.setRGB(x,y, Color.RED.getRGB());
-                } else {
-                    diffImage.setRGB(x,y, Color.BLACK.getRGB());
                 }
             }
         }
-        exportImage("diff", diffImage);
         return diff;
     }
 
@@ -73,7 +74,7 @@ public class Utils {
         System.out.println("Time taken for " + info + ": "+ timeElapsed.toMillis() +" milliseconds");
     }
 
-    public static List<com.orangebyte256.convexcopier.common.Point> integersToPoints(Integer... list) {
+    public static List<Point> integersToPoints(Integer... list) {
         assert list.length % 2 == 0;
 
         Iterator<Integer> iter = Arrays.stream(list).iterator();

@@ -4,13 +4,18 @@ import com.orangebyte256.convexcopier.common.Convex;
 import com.orangebyte256.convexcopier.common.Line;
 import com.orangebyte256.convexcopier.common.Point;
 
-import java.awt.image.BufferedImage;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
 public class FillPolygonImpl {
-    public static void fillPolygon(BufferedImage image, Convex convex, BufferedImage pattern, int parallelism) {
+    static {
+        System.loadLibrary("fill_polygon_impl_cpp");
+    }
+
+    public static void fillPolygonJava(int[] imagePixels, int imageWidth, Convex convex, int[] patternPixels,
+                                   int patternWidth, int parallelism) {
         HashMap<Integer, ArrayList<Line>> linesPerHorizonUpperPoint = new HashMap<>();
         HashMap<Integer, ArrayList<Line>> linesPerHorizonBottomPoint = new HashMap<>();
         convex.getLines().forEach(line -> {
@@ -51,9 +56,10 @@ public class FillPolygonImpl {
                 while (iter.hasNext()) {
                     int left = iter.next();
                     int right = iter.next();
-                    int length = right - left;
-                    int[] pixels = pattern.getRGB(left, y, length, 1, null, 0, length);
-                    image.setRGB(left, y, length, 1, pixels, 0, 0);
+                    if (right + 1 - left >= 0) {
+                        System.arraycopy(patternPixels, y * patternWidth + left, imagePixels, y * imageWidth + left,
+                                right + 1 - left);
+                    }
                 }
             }
         };
@@ -70,4 +76,8 @@ public class FillPolygonImpl {
             throw new RuntimeException(e);
         }
     }
+
+    public native void fillPolygonJNI(int[] imagePixels, int imageWidth, int[] convex, int[] patternPixels,
+                                        int patternWidth, int parallelism);
+
 }

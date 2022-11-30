@@ -8,6 +8,7 @@ import com.orangebyte256.convexcopier.fillpolygonimpl.FillPolygonImpl;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -80,10 +81,23 @@ public class ImageEditor {
         }
     }
 
-    public void fillPolygon(Convex convex, BufferedImage pattern, int parallelism) {
+    public void fillPolygon(Convex convex, BufferedImage pattern, int parallelism, boolean useJNI) {
         assert convexFits(convex);
 
-        FillPolygonImpl.fillPolygon(image, convex, pattern, parallelism);
+        int[] imagePixels = ((DataBufferInt)(image.getRaster().getDataBuffer())).getData();
+        int[] patternPixels = ((DataBufferInt)(pattern.getRaster().getDataBuffer())).getData();
+
+        FillPolygonImpl fillPolygonImpl = new FillPolygonImpl();
+        if (useJNI) {
+            int[] arrayOfPoints = new int[convex.getPoints().size() * 2];
+            for (int i = 0; i < convex.getPoints().size(); i++) {
+                arrayOfPoints[i * 2] = convex.getPoints().get(i).x;
+                arrayOfPoints[i * 2 + 1] = convex.getPoints().get(i).y;
+            }
+            fillPolygonImpl.fillPolygonJNI(imagePixels, image.getWidth(), arrayOfPoints, patternPixels, pattern.getWidth(), parallelism);
+        } else {
+            FillPolygonImpl.fillPolygonJava(imagePixels, image.getWidth(), convex, patternPixels, pattern.getWidth(), parallelism);
+        }
     }
 
     public BufferedImage getImage() {
@@ -119,7 +133,7 @@ public class ImageEditor {
                 }
                 ImageEditor imageEditor = new ImageEditor(Utils.importImage(args[1]));
                 runWithTimeMeasurement(() -> imageEditor.fillPolygon(Convex.importConvex(args[3]),
-                        Utils.importImage(args[2]), 4), "Original");
+                        Utils.importImage(args[2]), 4, true), "Original");
                 Utils.exportImage("result", imageEditor.image);
             }
             default -> printHelpMessage();
