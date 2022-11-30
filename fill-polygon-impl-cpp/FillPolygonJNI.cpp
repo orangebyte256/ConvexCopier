@@ -18,14 +18,14 @@ static void release_pointer(JNIEnv *env, jintArray array, int *buf) {
 }
 
 JNIEXPORT void JNICALL Java_com_orangebyte256_convexcopier_fillpolygonimpl_FillPolygonImpl_fillPolygonJNI
-  (JNIEnv *env, jobject clz, jintArray image, jint imageWidth, jintArray coords, jintArray pattern, jint patternWidth, jint parallelism) {
+  (JNIEnv *env, jobject clz, jintArray image, jint imageWidth, jintArray coords, jintArray pattern, jint patternWidth, jint parallelism, int ancorX, int ancorY) {
     int *imagePixels, *patternPixels, coordsSize, *coordsArray;
     transform_to_pointer(env, image, &imagePixels);
     transform_to_pointer(env, pattern, &patternPixels);
     transform_to_pointer(env, coords, &coordsArray, &coordsSize);
 
     FillPolygonImpl fillPolygonImpl(imagePixels, imageWidth, patternPixels, patternWidth);
-    fillPolygonImpl.fillPolygon(coordsSize, coordsArray, parallelism);
+    fillPolygonImpl.fillPolygon(coordsSize, coordsArray, parallelism, ancorX, ancorY);
 
     release_pointer(env, image, imagePixels);
     release_pointer(env, pattern, patternPixels);

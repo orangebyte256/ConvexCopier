@@ -2,18 +2,18 @@
 #include <jni.h>
 /* Header for class com_orangebyte256_convexcopier_fillpolygonimpl_FillPolygonImpl */
 
-#ifndef FillPolygonJNI
-#define FillPolygonJNI
+#ifndef FILL_POLYGON_JNI
+#define FILL_POLYGON_JNI
 #ifdef __cplusplus
 extern "C" {
 #endif
 /*
  * Class:     com_orangebyte256_convexcopier_fillpolygonimpl_FillPolygonImpl
  * Method:    fillPolygonJNI
- * Signature: ([II[I[III)V
+ * Signature: ([II[I[IIIII)V
  */
 JNIEXPORT void JNICALL Java_com_orangebyte256_convexcopier_fillpolygonimpl_FillPolygonImpl_fillPolygonJNI
-  (JNIEnv *, jobject, jintArray, jint, jintArray, jintArray, jint, jint);
+  (JNIEnv *, jobject, jintArray, jint, jintArray, jintArray, jint, jint, jint, jint);
 
 #ifdef __cplusplus
 }

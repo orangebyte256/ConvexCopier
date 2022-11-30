@@ -3,7 +3,6 @@
 #include <set>
 #include <vector>
 #include <thread>
-#include <iostream>
 
 FillPolygonImpl::FillPolygonImpl(int *imagePixels, int imageWidth, int *patternPixels, int patternWidth) {
     this->imagePixels = imagePixels;
@@ -26,7 +25,11 @@ std::set<int> FillPolygonImpl::calcCrossingPoints(int y) const {
     return crossPoints;
 }
 
-void FillPolygonImpl::fillPolygonWorker() {
+int FillPolygonImpl::calcOffsetInImage(int x, int y, int width) const {
+    return y * width + x;
+}
+
+void FillPolygonImpl::fillPolygonWorker(int ancorX, int ancorY) {
     while (true) {
         mutex.lock();
         int y = curY--;
@@ -51,12 +54,16 @@ void FillPolygonImpl::fillPolygonWorker() {
         while (orderedPoints != crossPoints.end()) {
             int left = *orderedPoints++;
             int right = *orderedPoints++;
-            std::memcpy(imagePixels + y * imageWidth + left, patternPixels + y * patternWidth + left, (right - left) * sizeof(int));
+            int length = right - left;
+            if (length > 0) {
+                std::memcpy(imagePixels + calcOffsetInImage(left + ancorX, y + ancorY, imageWidth),
+                            patternPixels + calcOffsetInImage(left, y, patternWidth), length * sizeof(int));
+            }
         }
     }
 }
 
-void FillPolygonImpl::fillPolygon(int coordsSize, int* coordsArray, int parallelism) {
+void FillPolygonImpl::fillPolygon(int coordsSize, int* coordsArray, int parallelism, int ancorX, int ancorY) {
     int minY = INT_MAX, maxY = INT_MIN;
     int pointsCount = coordsSize / 2;
     for (int i = 0; i < pointsCount; i++) {
@@ -78,7 +85,7 @@ void FillPolygonImpl::fillPolygon(int coordsSize, int* coordsArray, int parallel
 
     std::thread threads[parallelism];
     for (int i = 0; i < parallelism; i++) {
-        threads[i] = std::thread(&FillPolygonImpl::fillPolygonWorker, this);
+        threads[i] = std::thread(&FillPolygonImpl::fillPolygonWorker, this, ancorX, ancorY);
     }
     for (int i = 0; i < parallelism; i++) {
         threads[i].join();

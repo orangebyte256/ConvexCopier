@@ -1,5 +1,5 @@
-#ifndef FILL_POLYGON_IMPL_CPP_FILLPOLYGONIMPL_H
-#define FILL_POLYGON_IMPL_CPP_FILLPOLYGONIMPL_H
+#ifndef FILL_POLYGON_IMPL
+#define FILL_POLYGON_IMPL
 
 #include "Point.h"
 #include "Line.h"
@@ -19,11 +19,12 @@ private:
     std::mutex mutex;
     int curY, lastY;
     std::set<int> calcCrossingPoints(int y) const;
-    void fillPolygonWorker();
+    void fillPolygonWorker(int ancorX, int ancorY);
+    int calcOffsetInImage(int x, int y, int width) const;
 public:
     FillPolygonImpl(int *imagePixels, int imageWidth, int *patternPixels, int patternWidth);
-    void fillPolygon(int coordsSize, int *coordsArray, int parallelism);
+    void fillPolygon(int coordsSize, int *coordsArray, int parallelism, int ancorX, int ancorY);
 };
 
 
-#endif //FILL_POLYGON_IMPL_CPP_FILLPOLYGONIMPL_H
+#endif //FILL_POLYGON_IMPL
