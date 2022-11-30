@@ -64,6 +64,10 @@ void FillPolygonImpl::fillPolygonWorker(int ancorX, int ancorY) {
 }
 
 void FillPolygonImpl::fillPolygon(int coordsSize, int* coordsArray, int parallelism, int ancorX, int ancorY) {
+    linesPerHorizonUpperPoint.clear();
+    linesPerHorizonBottomPoint.clear();
+    crossingSet.clear();
+
     int minY = INT_MAX, maxY = INT_MIN;
     int pointsCount = coordsSize / 2;
     for (int i = 0; i < pointsCount; i++) {

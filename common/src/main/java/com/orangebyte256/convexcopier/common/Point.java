@@ -24,6 +24,14 @@ public class Point {
 
         return this.x == other.x && this.y == other.y;
     }
+
+    @Override
+    public int hashCode() {
+        int result = x;
+        result = 31 * result + y;
+        return result;
+    }
+
     @Override
     public String toString() {
         return x + " " + y;

@@ -18,7 +18,6 @@ public class Utils {
         try {
             ImageIO.write(image, "jpg", outputfile);
         } catch (IOException e) {
-            // TODO change it
             System.err.println("Some error happened while exporting");
             throw new RuntimeException(e);
         }
@@ -35,8 +34,7 @@ public class Utils {
             g.dispose();
             return result;
         } catch (IOException e) {
-            // TODO change it
-            System.err.println("Some error happened while exporting");
+            System.err.println("Some error happened while importing");
             throw new RuntimeException(e);
         }
     }

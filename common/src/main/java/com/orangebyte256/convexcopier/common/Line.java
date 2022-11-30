@@ -6,8 +6,7 @@ public class Line {
     private final Point first, second;
     // Ax + By + C = 0
     private final double A, B, C;
-    // TODO override hash
-    // TODO think more
+
     public Line (Point first, Point second) {
         assert first.x != second.x || first.y != second.y;
 
@@ -26,7 +25,7 @@ public class Line {
         return new Point(second);
     }
 
-    private Boolean isPointInsideLineBox(Point point) {
+    private Boolean isPointInsideSector(Point point) {
         return (Math.min(this.first.x, this.second.x) <= point.x && point.x <= Math.max(this.first.x, this.second.x) &&
                 Math.min(this.first.y, this.second.y) <= point.y && point.y <= Math.max(this.first.y, this.second.y));
     }
@@ -38,19 +37,19 @@ public class Line {
     public Optional<Point> findCrossPoint(Line other) {
         if (pointOnLine(other.first) && pointOnLine(other.second)) {
             int fits = 0;
-            fits += this.isPointInsideLineBox(other.first) ? 1 : 0;
-            fits += this.isPointInsideLineBox(other.second) ? 1 : 0;
-            fits += other.isPointInsideLineBox(this.first) ? 1 : 0;
-            fits += other.isPointInsideLineBox(this.second) ? 1 : 0;
+            fits += this.isPointInsideSector(other.first) ? 1 : 0;
+            fits += this.isPointInsideSector(other.second) ? 1 : 0;
+            fits += other.isPointInsideSector(this.first) ? 1 : 0;
+            fits += other.isPointInsideSector(this.second) ? 1 : 0;
             if (fits > 2 || fits == 0) {
                 return Optional.empty();
             }
             if (this.first.equals(other.first) || this.first.equals(other.second) ||
                     this.second.equals(other.first) || this.second.equals(other.second)) {
-                if (this.isPointInsideLineBox(other.first)) {
+                if (this.isPointInsideSector(other.first)) {
                     return Optional.of(other.getFirst());
                 }
-                if (this.isPointInsideLineBox(other.second)) {
+                if (this.isPointInsideSector(other.second)) {
                     return Optional.of(other.getSecond());
                 }
             }
@@ -59,7 +58,7 @@ public class Line {
         int x = (int)((this.B * other.C - other.B * this.C) / (this.A * other.B - other.A * this.B));
         int y = (int)((this.C * other.A - other.C * this.A) / (this.A * other.B - other.A * this.B));
         Point result = new Point(x, y);
-        if (this.isPointInsideLineBox(result) && other.isPointInsideLineBox(result)) {
+        if (this.isPointInsideSector(result) && other.isPointInsideSector(result)) {
             return Optional.of(result);
         }
         return Optional.empty();
@@ -71,7 +70,7 @@ public class Line {
         }
 
         Point point = new Point(x, (int)(-(C + A * x) / B));
-        if (!isPointInsideLineBox(point)) {
+        if (!isPointInsideSector(point)) {
             return Optional.empty();
         }
         return Optional.of(point.y);
@@ -83,10 +82,29 @@ public class Line {
         }
 
         Point point = new Point((int)(-(C + B * y) / A), y);
-        if (!isPointInsideLineBox(point)) {
+        if (!isPointInsideSector(point)) {
             return Optional.empty();
         }
         return Optional.of(point.x);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof Line other)) {
+            return false;
+        }
+
+        return this.first == other.first && this.second == other.second;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = first.hashCode();
+        result = 31 * result + second.hashCode();
+        return result;
     }
 
     // Methods for testing purpose

@@ -1,6 +1,6 @@
 package com.orangebyte256.convexcopier.imageeditor;
 
-import com.orangebyte256.convexcopier.common.Convex;
+import com.orangebyte256.convexcopier.common.Polygon;
 import com.orangebyte256.convexcopier.common.Utils;
 import com.orangebyte256.convexcopier.common.Point;
 import com.orangebyte256.convexcopier.fillpolygonimpl.FillPolygonImpl;
@@ -15,18 +15,19 @@ import java.util.function.Consumer;
 import static com.orangebyte256.convexcopier.common.Utils.runWithTimeMeasurement;
 
 public class ImageEditor {
-    final private BufferedImage image;
+    static {
+        System.loadLibrary("fill_polygon_impl_cpp");
+    }
+
+    private final BufferedImage image;
 
     public ImageEditor(BufferedImage image) {
         this.image = image;
     }
 
-    private Boolean convexFits(Convex convex) {
-        return convex.enclosingMaxPoint().x < image.getWidth() && convex.enclosingMaxPoint().y < image.getHeight();
-    }
-
-    public void fillPolygonBFS(Convex convex, BufferedImage pattern, Point inside) {
-        assert convexFits(convex);
+    public void fillPolygonBFS(Polygon polygon, BufferedImage pattern, Point inside, Point patternAncor) {
+        assert polygon.fitsToImage(image, new Point(0, 0));
+        assert polygon.fitsToImage(pattern, patternAncor);
 
         int[][] visited = new int[image.getHeight()][image.getWidth()];
         Consumer<Point> markVisited = ((p) -> {
@@ -39,7 +40,7 @@ public class ImageEditor {
             }
         });
 
-        convex.getLines().forEach(line -> {
+        polygon.getLines().forEach(line -> {
             Point first = line.getFirst(), second = line.getSecond();
             int width = Math.abs(first.x - second.x);
             int height = Math.abs(first.y - second.y);
@@ -72,7 +73,7 @@ public class ImageEditor {
             if (visited[y][x] == 1) {
                 continue;
             }
-            image.setRGB(x, y, pattern.getRGB(x, y));
+            image.setRGB(x, y, pattern.getRGB(x + patternAncor.x, y + patternAncor.y));
             visited[y][x] = 1;
             queue.add(new Point(x + 1, y));
             queue.add(new Point(x - 1, y));
@@ -81,24 +82,22 @@ public class ImageEditor {
         }
     }
 
-    public void fillPolygon(Convex convex, BufferedImage pattern, int parallelism, boolean useJNI, int ancorX, int ancorY) {
-        assert convexFits(convex);
+    public native void fillPolygonJNI(int[] imagePixels, int imageWidth, int[] convex, int[] patternPixels,
+                                      int patternWidth, int parallelism, int ancorX, int ancorY);
+
+    public void fillPolygon(Polygon polygon, BufferedImage pattern, int parallelism, boolean useJNI, Point ancor) {
+        assert polygon.fitsToImage(image, ancor);
+        assert polygon.fitsToImage(pattern, new Point(0, 0));
 
         int[] imagePixels = ((DataBufferInt)(image.getRaster().getDataBuffer())).getData();
         int[] patternPixels = ((DataBufferInt)(pattern.getRaster().getDataBuffer())).getData();
 
-        FillPolygonImpl fillPolygonImpl = new FillPolygonImpl();
         if (useJNI) {
-            int[] arrayOfPoints = new int[convex.getPoints().size() * 2];
-            for (int i = 0; i < convex.getPoints().size(); i++) {
-                arrayOfPoints[i * 2] = convex.getPoints().get(i).x;
-                arrayOfPoints[i * 2 + 1] = convex.getPoints().get(i).y;
-            }
-            fillPolygonImpl.fillPolygonJNI(imagePixels, image.getWidth(), arrayOfPoints, patternPixels,
-                    pattern.getWidth(), parallelism, ancorX, ancorY);
+            fillPolygonJNI(imagePixels, image.getWidth(), polygon.pointsToPlainArray(), patternPixels,
+                    pattern.getWidth(), parallelism, ancor.x, ancor.y);
         } else {
-            FillPolygonImpl.fillPolygonJava(imagePixels, image.getWidth(), convex, patternPixels,
-                    pattern.getWidth(), parallelism, ancorX, ancorY);
+            FillPolygonImpl javaImpl = new FillPolygonImpl(imagePixels, image.getWidth(), patternPixels, pattern.getWidth());
+            javaImpl.fillPolygon(polygon, parallelism, ancor);
         }
     }
 
@@ -129,14 +128,24 @@ public class ImageEditor {
                 runPointCreator(args[1], args[2]);
             }
             case "-copy" -> {
-                if (args.length != 4 && !(args.length == 5 && args[4].equals("jni"))) {
+                if (args.length != 6 && !(args.length == 7 && args[6].equals("jni"))) {
                     printHelpMessage();
                     return;
                 }
                 ImageEditor imageEditor = new ImageEditor(Utils.importImage(args[1]));
-                boolean isJNI = args.length == 5;
-                runWithTimeMeasurement(() -> imageEditor.fillPolygon(Convex.importConvex(args[3]),
-                        Utils.importImage(args[2]), 4, isJNI, 200, 200), "Original");
+                BufferedImage pattern = Utils.importImage(args[2]);
+                Polygon polygon = Polygon.importConvex(args[3]);
+                Point ancor = new Point(Integer.parseInt(args[4]), Integer.parseInt(args[5]));
+                boolean isJNI = args.length == 7;
+                if (!polygon.fitsToImage(pattern, new Point(0, 0))) {
+                    System.err.println("Error: Polygon's points outside pattern image");
+                    return;
+                }
+                if (!polygon.fitsToImage(imageEditor.getImage(), ancor)) {
+                    System.err.println("Error: Polygon's points with ancor outside source image");
+                    return;
+                }
+                runWithTimeMeasurement(() -> imageEditor.fillPolygon(polygon, pattern, 4, isJNI, ancor), "Original");
                 Utils.exportImage("result", imageEditor.image);
             }
             default -> printHelpMessage();

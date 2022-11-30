@@ -1,6 +1,6 @@
 package com.orangebyte256.convexcopier.imageeditor;
 
-import com.orangebyte256.convexcopier.common.Convex;
+import com.orangebyte256.convexcopier.common.Polygon;
 import com.orangebyte256.convexcopier.common.Line;
 import com.orangebyte256.convexcopier.common.Point;
 
@@ -63,14 +63,14 @@ public class PointCreator extends JLabel {
                     if (points.size() < 3) {
                         JOptionPane.showMessageDialog(PointCreator.this, "Please, choose more than two points");
                     } else {
-                        if (!Convex.isPointsFits(points)) {
+                        if (!Polygon.isPointsFits(points)) {
                             JOptionPane.showMessageDialog(PointCreator.this, "Points cannot form correct polygon");
                             break;
                         }
                         isFinished = true;
                         updateFrame();
                         JOptionPane.showMessageDialog(PointCreator.this, "Operation done successfully");
-                        (new Convex(points)).export(output);
+                        (new Polygon(points)).export(output);
                         System.exit(0);
                     }
                     break;

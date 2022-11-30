@@ -1,17 +1,23 @@
 package com.orangebyte256.convexcopier.common;
 
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Convex {
-    final List<Point> points;
-    final private Point enclosingMinPoint;
-    final private Point enclosingMaxPoint;
-    final private ArrayList<Line> lines;
+public class Polygon {
+    private final List<Point> points;
+    private final Point enclosingMinPoint;
+    private final Point enclosingMaxPoint;
+    private final ArrayList<Line> lines;
 
     public static Boolean isPointsFits(List<Point> points) {
         return pointsToLines(points).isPresent();
+    }
+
+    public Boolean fitsToImage(BufferedImage image, Point ancor) {
+        return enclosingMinPoint.x + ancor.x >= 0 && enclosingMinPoint.y + ancor.y >= 0 &&
+                enclosingMaxPoint.x + ancor.x < image.getWidth() && enclosingMaxPoint.y + ancor.y < image.getHeight();
     }
 
     private static Optional<ArrayList<Line>> pointsToLines(List<Point> points) {
@@ -40,7 +46,7 @@ public class Convex {
         return Optional.of(lines);
     }
 
-    public Convex(List<Point> points) {
+    public Polygon(List<Point> points) {
         this.points = points;
         enclosingMinPoint = new Point(Integer.MAX_VALUE, Integer.MAX_VALUE);
         enclosingMaxPoint = new Point(Integer.MIN_VALUE, Integer.MIN_VALUE);
@@ -68,8 +74,13 @@ public class Convex {
         return lines;
     }
 
-    public List<Point> getPoints() {
-        return points;
+    public int[] pointsToPlainArray() {
+        int[] arrayOfPoints = new int[points.size() * 2];
+        for (int i = 0; i < points.size(); i++) {
+            arrayOfPoints[i * 2] = points.get(i).x;
+            arrayOfPoints[i * 2 + 1] = points.get(i).y;
+        }
+        return arrayOfPoints;
     }
 
     public void export(String path) {
@@ -83,11 +94,11 @@ public class Convex {
         }
     }
 
-    public static Convex importConvex(String path) {
+    public static Polygon importConvex(String path) {
         try {
             Scanner scanner = new Scanner(new File(path));
             String text = scanner.useDelimiter("\\A").next();
-            Convex res = new Convex(Arrays.stream(text.split( "," )).map(Point::importPoint).
+            Polygon res = new Polygon(Arrays.stream(text.split( "," )).map(Point::importPoint).
                     collect(Collectors.toList()));
             scanner.close();
             return res;

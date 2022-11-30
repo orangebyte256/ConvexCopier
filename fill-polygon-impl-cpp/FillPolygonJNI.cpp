@@ -17,7 +17,7 @@ static void release_pointer(JNIEnv *env, jintArray array, int *buf) {
     env->ReleasePrimitiveArrayCritical(array, buf, JNI_ABORT);
 }
 
-JNIEXPORT void JNICALL Java_com_orangebyte256_convexcopier_fillpolygonimpl_FillPolygonImpl_fillPolygonJNI
+JNIEXPORT void JNICALL Java_com_orangebyte256_convexcopier_imageeditor_ImageEditor_fillPolygonJNI
   (JNIEnv *env, jobject clz, jintArray image, jint imageWidth, jintArray coords, jintArray pattern, jint patternWidth, jint parallelism, int ancorX, int ancorY) {
     int *imagePixels, *patternPixels, coordsSize, *coordsArray;
     transform_to_pointer(env, image, &imagePixels);
