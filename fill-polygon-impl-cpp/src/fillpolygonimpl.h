@@ -21,7 +21,7 @@ class FillPolygonImpl {
     std::mutex mutex;
     int curY;
 
-    static std::set<int> calcCrossingPoints(const std::unordered_set<Line> &crossingSet, int y);
+    static std::vector<int> calcCrossingPoints(const std::unordered_set<Line> &crossingSet, int y);
     static int calcOffsetInImage(int x, int y, int width);
     static void setupMaxAndMin(const std::vector<Point> &points, int &maxY, int &minY);
     static void fillLinesPerHorizonMaps(const std::vector<Point> &points, UnorderedMapOfLinesT &linesPerHorizonUpperPoint,

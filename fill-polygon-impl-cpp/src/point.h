@@ -12,12 +12,11 @@ struct Point {
 };
 
 bool operator==(const Point& lhs, const Point& rhs);
-bool operator!=(const Point& lhs, const Point& rhs);
 
 template<>
 struct std::hash<Point> {
     size_t operator()(const Point &point) const {
-        return std::hash<int>()(point.x) ^ std::hash<int>()(point.y);
+        return (std::hash<int>()(point.x) * (std::abs(point.x) % 37)) ^ std::hash<int>()(point.y);
     }
 };
 

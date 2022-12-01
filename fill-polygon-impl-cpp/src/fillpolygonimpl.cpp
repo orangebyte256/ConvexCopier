@@ -10,16 +10,13 @@ FillPolygonImpl::FillPolygonImpl(int *imagePixels, int imageWidth, int *patternP
     this->patternWidth = patternWidth;
 }
 
- std::set<int> FillPolygonImpl::calcCrossingPoints(const std::unordered_set<Line> &crossingSet, int y) {
-    std::set<int> crossPoints;
+ std::vector<int> FillPolygonImpl::calcCrossingPoints(const std::unordered_set<Line> &crossingSet, int y) {
+    std::vector<int> crossPoints;
     for (const Line& elem: crossingSet) {
         int x = elem.getXByY(y);
-        if (crossPoints.find(x) != crossPoints.end()) {
-            crossPoints.erase(x);
-        } else {
-            crossPoints.insert(x);
-        }
+        crossPoints.push_back(x);
     }
+    std::sort(crossPoints.begin(), crossPoints.end());
     return crossPoints;
 }
 
@@ -46,7 +43,7 @@ void FillPolygonImpl::fillPolygonWorker(std::unordered_set<Line> &crossingSet, c
                 crossingSet.erase(elem);
             }
         }
-        std::set<int> crossPoints = calcCrossingPoints(crossingSet, y);
+        std::vector<int> crossPoints = calcCrossingPoints(crossingSet, y);
         assert (crossPoints.size() % 2 == 0);
         mutex.unlock();
 
@@ -62,8 +59,6 @@ void FillPolygonImpl::fillPolygonWorker(std::unordered_set<Line> &crossingSet, c
         }
     }
 }
-
-
 
 void FillPolygonImpl::fillLinesPerHorizonMaps(const std::vector<Point> &points,
                                               UnorderedMapOfLinesT &linesPerHorizonUpperPoint,

@@ -11,8 +11,6 @@ const double FUZZ_FACTOR = 0.0001;
 
 TEST(Point_testing, BasicAssertions) {
     EXPECT_EQ(Point(1,1), Point(1,1));
-    EXPECT_NE(Point(1,1), Point(2,1));
-    EXPECT_NE(Point(1,1), Point(1,2));
 }
 
 TEST(Line_testing, BasicAssertions) {
@@ -51,9 +49,9 @@ TEST(FillPolygon_testing, calcCrossingPoints) {
     lines.insert(Line(Point(10,10), Point(20,0)));
     lines.insert(Line(Point(0,0), Point(20,10)));
 
-    std::set<int> answer_0({20});
-    std::set<int> answer_5({5, 10, 15});
-    std::set<int> answer_10({20});
+    std::vector<int> answer_0({0, 0, 20});
+    std::vector<int> answer_5({5, 10, 15});
+    std::vector<int> answer_10({10, 10, 20});
 
     EXPECT_EQ(FillPolygonImpl::calcCrossingPoints(lines, 0), answer_0);
     EXPECT_EQ(FillPolygonImpl::calcCrossingPoints(lines, 5), answer_5);
