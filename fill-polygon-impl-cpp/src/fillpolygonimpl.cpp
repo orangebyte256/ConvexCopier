@@ -11,10 +11,11 @@ FillPolygonImpl::FillPolygonImpl(int *imagePixels, int imageWidth, int *patternP
 }
 
  std::vector<int> FillPolygonImpl::calcCrossingPoints(const std::unordered_set<Line> &crossingSet, int y) {
-    std::vector<int> crossPoints;
+    std::vector<int> crossPoints(crossingSet.size());
+    int i = 0;
     for (const Line& elem: crossingSet) {
         int x = elem.getXByY(y);
-        crossPoints.push_back(x);
+        crossPoints[i++] = x;
     }
     std::sort(crossPoints.begin(), crossPoints.end());
     return crossPoints;
