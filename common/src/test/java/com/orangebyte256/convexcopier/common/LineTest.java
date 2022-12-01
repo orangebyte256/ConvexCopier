@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class LineTest {
     private static final double FUZZ_FACTOR = 0.0001;
@@ -57,7 +57,9 @@ class LineTest {
         checkLineCrossing(List.of(0, 0, 50, 50), List.of(100, 150, 150, 100), null);
         checkLineCrossing(List.of(0, 0, 50, 0), List.of(25, 0, 50, 0), null);
         checkLineCrossing(List.of(0, 0, 50, 0), List.of(100, 0, 150, 0), null);
+        checkLineCrossing(List.of(0, 0, 50, 0), List.of(25, 0, 100, 0), null);
         checkLineCrossing(List.of(0, 0, 25, 0), List.of(25, 0, 50, 0), List.of(25, 0));
+        checkLineCrossing(List.of(0, 0, 25, 0), List.of(-25, 0, 0, 0), List.of(0, 0));
     }
 
     @Test
@@ -76,7 +78,31 @@ class LineTest {
         assertEquals(new Line(new Point(0,0), new Point(10, 10)).getXByY(0), Optional.of(0));
         assertEquals(new Line(new Point(0,0), new Point(10, 10)).getXByY(10), Optional.of(10));
         assertEquals(new Line(new Point(0,0), new Point(10, 0)).getXByY(5), Optional.empty());
-        assertEquals(new Line(new Point(0,0), new Point(10, 0)).getXByY(15), Optional.empty());
+        assertEquals(new Line(new Point(0,0), new Point(0, 10)).getXByY(15), Optional.empty());
         assertEquals(new Line(new Point(0,0), new Point(0, 10)).getXByY(5), Optional.of(0));
+    }
+
+    @Test
+    void equals() {
+        assertEquals(new Line(new Point(0,0), new Point(10, 10)), new Line(new Point(0,0), new Point(10, 10)));
+        assertNotEquals(new Line(new Point(0,0), new Point(10, 10)), new Line(new Point(1,0), new Point(10, 10)));
+    }
+
+    @Test
+    void isPointInsideSector() {
+        assertTrue(new Line(new Point(0,0), new Point(10, 10)).isPointInsideSector(new Point(5, 5)));
+        assertTrue(new Line(new Point(0,0), new Point(10, 10)).isPointInsideSector(new Point(10, 10)));
+        assertTrue(new Line(new Point(0,0), new Point(10, 10)).isPointInsideSector(new Point(0, 0)));
+        assertFalse(new Line(new Point(0,0), new Point(10, 10)).isPointInsideSector(new Point(11, 10)));
+        assertFalse(new Line(new Point(0,0), new Point(10, 10)).isPointInsideSector(new Point(-1, 0)));
+    }
+
+    @Test
+    void isPointOnLine() {
+        assertTrue(new Line(new Point(0,0), new Point(10, 10)).pointOnLine(new Point(5, 5)));
+        assertTrue(new Line(new Point(0,0), new Point(10, 10)).pointOnLine(new Point(10, 10)));
+        assertTrue(new Line(new Point(0,0), new Point(10, 10)).pointOnLine(new Point(0, 0)));
+        assertFalse(new Line(new Point(0,0), new Point(10, 10)).pointOnLine(new Point(5, 0)));
+        assertFalse(new Line(new Point(0,0), new Point(10, 10)).pointOnLine(new Point(0, 5)));
     }
 }

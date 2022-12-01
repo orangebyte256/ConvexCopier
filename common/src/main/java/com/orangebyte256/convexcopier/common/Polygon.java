@@ -21,12 +21,12 @@ public class Polygon {
             Point cur = points.get(i);
             Point next = points.get((i + 1) % points.size());
             Line curLine = new Line(cur, next);
-            for (int j = 0; j < lines.size() - 1; j++) {
+            for (int j = 0; j < lines.size(); j++) {
                 if (i == points.size() - 1 && j == 0) {
                     if (curLine.findCrossPoint(lines.get(j)).isEmpty()) {
                         return Optional.empty();
                     }
-                } else if (j == points.size() - 1) {
+                } else if (j == lines.size() - 1) {
                     if (curLine.findCrossPoint(lines.get(j)).isEmpty()) {
                         return Optional.empty();
                     }
@@ -98,8 +98,7 @@ public class Polygon {
         try {
             Scanner scanner = new Scanner(new File(path));
             String text = scanner.useDelimiter("\\A").next();
-            Polygon res = new Polygon(Arrays.stream(text.split( "," )).map(Point::importPoint).
-                    collect(Collectors.toList()));
+            Polygon res = new Polygon(Arrays.stream(text.split( "," )).map(Point::importPoint).collect(Collectors.toList()));
             scanner.close();
             return res;
         } catch (FileNotFoundException e) {

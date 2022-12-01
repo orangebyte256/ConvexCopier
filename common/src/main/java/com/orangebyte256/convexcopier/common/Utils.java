@@ -76,7 +76,7 @@ public class Utils {
         assert list.length % 2 == 0;
 
         Iterator<Integer> iter = Arrays.stream(list).iterator();
-        ArrayList<com.orangebyte256.convexcopier.common.Point> points = new ArrayList<>();
+        ArrayList<Point> points = new ArrayList<>();
         while (iter.hasNext()) {
             points.add(new Point(iter.next(), iter.next()));
         }

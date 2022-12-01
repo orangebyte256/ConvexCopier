@@ -6,6 +6,7 @@ public class Line {
     private final Point first, second;
     // Ax + By + C = 0
     private final double A, B, C;
+    private static final double FUZZ_FACTOR = 0.0001;
 
     public Line (Point first, Point second) {
         assert first.x != second.x || first.y != second.y;
@@ -25,13 +26,13 @@ public class Line {
         return new Point(second);
     }
 
-    private Boolean isPointInsideSector(Point point) {
+    protected Boolean isPointInsideSector(Point point) {
         return (Math.min(this.first.x, this.second.x) <= point.x && point.x <= Math.max(this.first.x, this.second.x) &&
                 Math.min(this.first.y, this.second.y) <= point.y && point.y <= Math.max(this.first.y, this.second.y));
     }
 
-    private Boolean pointOnLine(Point p) {
-        return Math.abs(A * p.x + B * p.y + C) < 0.0001;
+    protected Boolean pointOnLine(Point p) {
+        return Math.abs(A * p.x + B * p.y + C) < FUZZ_FACTOR;
     }
 
     public Optional<Point> findCrossPoint(Line other) {
@@ -97,7 +98,7 @@ public class Line {
             return false;
         }
 
-        return this.first == other.first && this.second == other.second;
+        return this.first.equals(other.first) && this.second.equals(other.second);
     }
 
     @Override
