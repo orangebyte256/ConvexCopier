@@ -25,39 +25,6 @@ class FillPolygonImplTest {
         assertEquals(new HashSet<>(list1), new HashSet<>(list2));
     }
 
-    private void compareListAsSet(HashSet<Line> set, List<Line> list2) {
-        assertEquals(set.size(), list2.size());
-        assertEquals(set, new HashSet<>(list2));
-    }
-
-    @Test
-    void updateCrossingSet() {
-        HashMap<Integer, ArrayList<Line>> linesPerHorizonUpperPoint = new HashMap<>();
-        HashMap<Integer, ArrayList<Line>> linesPerHorizonBottomPoint = new HashMap<>();
-        HashSet<Line> crossingSet = new HashSet<>();
-        Polygon polygon = new Polygon(List.of(new Point(25,0), new Point(0,25), new Point(25,50), new Point(50,25)));
-        FillPolygonImpl.fillLinesPerHorizonMaps(polygon, linesPerHorizonUpperPoint, linesPerHorizonBottomPoint);
-
-        FillPolygonImpl.updateCrossingSet(crossingSet, linesPerHorizonUpperPoint, linesPerHorizonBottomPoint, 50);
-        compareListAsSet(crossingSet,
-                List.of(new Line(new Point(0,25), new Point(25,50)), new Line(new Point(25,50), new Point(50,25))));
-
-        FillPolygonImpl.updateCrossingSet(crossingSet, linesPerHorizonUpperPoint, linesPerHorizonBottomPoint, 33);
-        compareListAsSet(crossingSet,
-                List.of(new Line(new Point(0,25), new Point(25,50)), new Line(new Point(25,50), new Point(50,25))));
-
-        FillPolygonImpl.updateCrossingSet(crossingSet, linesPerHorizonUpperPoint, linesPerHorizonBottomPoint, 25);
-        compareListAsSet(crossingSet,
-                List.of(new Line(new Point(25,0), new Point(0,25)), new Line(new Point(50,25), new Point(25,0))));
-
-        FillPolygonImpl.updateCrossingSet(crossingSet, linesPerHorizonUpperPoint, linesPerHorizonBottomPoint, 12);
-        compareListAsSet(crossingSet,
-                List.of(new Line(new Point(25,0), new Point(0,25)), new Line(new Point(50,25), new Point(25,0))));
-
-        FillPolygonImpl.updateCrossingSet(crossingSet, linesPerHorizonUpperPoint, linesPerHorizonBottomPoint, 0);
-        compareListAsSet(crossingSet, new ArrayList<>());
-    }
-
     @Test
     void fillLinesPerHorizonMaps() {
         HashMap<Integer, ArrayList<Line>> linesPerHorizonUpperPoint = new HashMap<>();

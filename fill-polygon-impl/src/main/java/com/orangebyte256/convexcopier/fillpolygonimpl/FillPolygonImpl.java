@@ -26,16 +26,6 @@ public class FillPolygonImpl {
         return y * width + x;
     }
 
-    protected static void updateCrossingSet(HashSet<Line> crossingSet, HashMap<Integer,
-            ArrayList<Line>> linesPerHorizonUpperPoint, HashMap<Integer, ArrayList<Line>> linesPerHorizonBottomPoint, int y) {
-        if (linesPerHorizonUpperPoint.containsKey(y)) {
-            crossingSet.addAll(linesPerHorizonUpperPoint.get(y));
-        }
-        if (linesPerHorizonBottomPoint.containsKey(y)) {
-            crossingSet.removeAll(linesPerHorizonBottomPoint.get(y));
-        }
-    }
-
     protected static List<Integer> getCrossingPoint(HashSet<Line> crossingSet, int y) {
         return crossingSet.stream().map(l -> l.getXByY(y).get()).sorted().toList();
     }
@@ -50,10 +40,15 @@ public class FillPolygonImpl {
                 if (y <= lastY) {
                     return;
                 }
-                updateCrossingSet(crossingSet, linesPerHorizonUpperPoint, linesPerHorizonBottomPoint, y);
+                if (linesPerHorizonUpperPoint.containsKey(y)) {
+                    crossingSet.addAll(linesPerHorizonUpperPoint.get(y));
+                }
+                if (linesPerHorizonBottomPoint.containsKey(y)) {
+                    crossingSet.removeAll(linesPerHorizonBottomPoint.get(y));
+                }
                 crossPoints = getCrossingPoint(crossingSet, y);
+                assert (crossPoints.size() % 2) == 0;
             }
-            assert (crossPoints.size() % 2) == 0;
 
             Iterator<Integer> iter = crossPoints.iterator();
             while (iter.hasNext()) {

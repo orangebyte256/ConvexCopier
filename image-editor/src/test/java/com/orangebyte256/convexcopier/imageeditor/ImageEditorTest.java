@@ -122,6 +122,7 @@ class ImageEditorTest {
     void fillPolygonBigDataWithMeasurementJava() {
         needMeasurement = true;
         isJNI = false;
+        System.out.println("Java implementation:");
         complexTestFillPolygon();
     }
 
@@ -130,6 +131,7 @@ class ImageEditorTest {
     void fillPolygonBigDataWithMeasurementCpp() {
         needMeasurement = true;
         isJNI = true;
+        System.out.println("C++ implementation:");
         complexTestFillPolygon();
     }
 }
