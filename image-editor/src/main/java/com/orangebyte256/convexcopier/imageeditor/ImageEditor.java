@@ -108,7 +108,7 @@ public class ImageEditor {
     private static void printHelpMessage() {
         System.out.println("Incorrect command. You can use:");
         System.out.println("For creation polygon: -create pattern_image outfile_for_coordinates");
-        System.out.println("For making copy: -copy source_image pattern_image coordinates_file [jni]");
+        System.out.println("For making copy: -copy source_image pattern_image coordinates_file ancorX ancorY [jni]");
     }
 
     public static void main(String[] args) {
@@ -149,9 +149,7 @@ public class ImageEditor {
                 Utils.exportImage("result", imageEditor.image);
             }
             default -> printHelpMessage();
-
         }
-        System.out.println("End");
     }
 
     private static void runPointCreator(String pattern, String coordsPath) {

@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>ConvexCopier</artifactId>
-        <groupId>groupId</groupId>
+        <groupId>com.orangebyte256.convexcopier</groupId>
         <version>1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -12,12 +12,12 @@
     <artifactId>image-editor</artifactId>
     <dependencies>
         <dependency>
-            <groupId>groupId</groupId>
+            <groupId>com.orangebyte256.convexcopier</groupId>
             <artifactId>common</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
-            <groupId>groupId</groupId>
+            <groupId>com.orangebyte256.convexcopier</groupId>
             <artifactId>fill-polygon-impl</artifactId>
             <version>1.0</version>
             <scope>compile</scope>
@@ -28,6 +28,7 @@
         <maven.compiler.source>19</maven.compiler.source>
         <maven.compiler.target>19</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <ConvexCopier.groupId>com.orangebyte256.convexcopier</ConvexCopier.groupId>
     </properties>
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
@@ -58,14 +59,14 @@
                     </execution>
                 </executions>
             </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.22.2</version>
-                    <configuration>
-                        <argLine>-Djava.library.path=${project.parent.basedir}/fill-polygon-impl-cpp/cmake-build-debug</argLine>
-                    </configuration>
-                </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.2</version>
+                <configuration>
+                    <argLine>-Djava.library.path=${project.parent.basedir}/fill-polygon-impl-cpp/cmake-build-debug</argLine>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

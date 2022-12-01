@@ -14,9 +14,9 @@ import java.util.List;
 
 public class Utils {
     public static void exportImage(String path, BufferedImage image) {
-        File outputfile = new File(path + ".jpg");
+        File outputfile = new File(path + ".png");
         try {
-            ImageIO.write(image, "jpg", outputfile);
+            ImageIO.write(image, "png", outputfile);
         } catch (IOException e) {
             System.err.println("Some error happened while exporting");
             throw new RuntimeException(e);
@@ -24,7 +24,7 @@ public class Utils {
     }
 
     public static BufferedImage importImage(String path) {
-        File img = new File(path + ".jpg");
+        File img = new File(path);
         try {
             BufferedImage in = ImageIO.read(img);
             BufferedImage result = new BufferedImage(in.getWidth(), in.getHeight(), BufferedImage.TYPE_INT_RGB);

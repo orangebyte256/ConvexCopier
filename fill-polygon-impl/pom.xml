@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>ConvexCopier</artifactId>
-        <groupId>groupId</groupId>
+        <groupId>com.orangebyte256.convexcopier</groupId>
         <version>1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -12,7 +12,7 @@
     <artifactId>fill-polygon-impl</artifactId>
     <dependencies>
         <dependency>
-            <groupId>groupId</groupId>
+            <groupId>com.orangebyte256.convexcopier</groupId>
             <artifactId>common</artifactId>
             <version>1.0</version>
             <scope>compile</scope>
