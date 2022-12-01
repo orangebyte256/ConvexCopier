@@ -25,7 +25,7 @@ public class ImageEditor {
         this.image = image;
     }
 
-    public void fillPolygonBFS(Polygon polygon, BufferedImage pattern, Point inside, Point patternAncor) {
+    protected void fillPolygonBFS(Polygon polygon, BufferedImage pattern, Point inside, Point patternAncor) {
         assert polygon.fitsToImage(image, new Point(0, 0));
         assert polygon.fitsToImage(pattern, patternAncor);
 
@@ -83,10 +83,10 @@ public class ImageEditor {
     }
 
     public native void fillPolygonJNI(int[] imagePixels, int imageWidth, int[] convex, int[] patternPixels,
-                                      int patternWidth, int parallelism, int ancorX, int ancorY);
+                                      int patternWidth, int parallelism, int anchorX, int anchorY);
 
-    public void fillPolygon(Polygon polygon, BufferedImage pattern, int parallelism, boolean useJNI, Point ancor) {
-        assert polygon.fitsToImage(image, ancor);
+    public void fillPolygon(Polygon polygon, BufferedImage pattern, int parallelism, boolean useJNI, Point anchor) {
+        assert polygon.fitsToImage(image, anchor);
         assert polygon.fitsToImage(pattern, new Point(0, 0));
 
         int[] imagePixels = ((DataBufferInt)(image.getRaster().getDataBuffer())).getData();
@@ -94,14 +94,14 @@ public class ImageEditor {
 
         if (useJNI) {
             fillPolygonJNI(imagePixels, image.getWidth(), polygon.pointsToPlainArray(), patternPixels,
-                    pattern.getWidth(), parallelism, ancor.x, ancor.y);
+                    pattern.getWidth(), parallelism, anchor.x, anchor.y);
         } else {
             FillPolygonImpl javaImpl = new FillPolygonImpl(imagePixels, image.getWidth(), patternPixels, pattern.getWidth());
-            javaImpl.fillPolygon(polygon, parallelism, ancor);
+            javaImpl.fillPolygon(polygon, parallelism, anchor);
         }
     }
 
-    public BufferedImage getImage() {
+    protected BufferedImage getImage() {
         return image;
     }
 
@@ -109,6 +109,16 @@ public class ImageEditor {
         System.out.println("Incorrect command. You can use:");
         System.out.println("For creation polygon: -create pattern_image outfile_for_coordinates");
         System.out.println("For making copy: -copy source_image pattern_image coordinates_file ancorX ancorY [jni]");
+    }
+
+    private static void runPointCreator(String pattern, String coordsPath) {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        BufferedImage image = Utils.importImage(pattern);
+        if (image.getWidth() >= screenSize.getWidth() || image.getHeight() >= screenSize.getHeight()) {
+            JOptionPane.showMessageDialog(null, "Image too big, choose another one");
+            System.exit(0);
+        }
+        new PointCreator(image, coordsPath);
     }
 
     public static void main(String[] args) {
@@ -151,15 +161,4 @@ public class ImageEditor {
             default -> printHelpMessage();
         }
     }
-
-    private static void runPointCreator(String pattern, String coordsPath) {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        BufferedImage image = Utils.importImage(pattern);
-        if (image.getWidth() >= screenSize.getWidth() || image.getHeight() >= screenSize.getHeight()) {
-            JOptionPane.showMessageDialog(null, "Image too big, choose another one");
-            System.exit(0);
-        }
-        new PointCreator(image, coordsPath);
-    }
-
 }

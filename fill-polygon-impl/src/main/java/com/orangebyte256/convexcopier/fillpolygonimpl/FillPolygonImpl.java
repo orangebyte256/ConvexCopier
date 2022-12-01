@@ -10,12 +10,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
 public class FillPolygonImpl {
-    private final HashMap<Integer, ArrayList<Line>> linesPerHorizonUpperPoint = new HashMap<>();
-    private final HashMap<Integer, ArrayList<Line>> linesPerHorizonBottomPoint = new HashMap<>();
-    private final HashSet<Line> crossingSet = new HashSet<>();
-    final AtomicInteger curY;
-    final int[] imagePixels, patternPixels;
-    final int imageWidth, patternWidth;
+    private final AtomicInteger curY;
+    private final int[] imagePixels, patternPixels;
+    private final int imageWidth, patternWidth;
 
     public FillPolygonImpl(int[] imagePixels, int imageWidth, int[] patternPixels, int patternWidth) {
         this.imagePixels = imagePixels;
@@ -25,11 +22,26 @@ public class FillPolygonImpl {
         curY = new AtomicInteger();
     }
 
-    private int calcOffset(int x, int y, int width) {
+    protected static int calcOffset(int x, int y, int width) {
         return y * width + x;
     }
 
-    private void fillPolygonWorker(int lastY, Point ancor) {
+    protected static void updateCrossingSet(HashSet<Line> crossingSet, HashMap<Integer,
+            ArrayList<Line>> linesPerHorizonUpperPoint, HashMap<Integer, ArrayList<Line>> linesPerHorizonBottomPoint, int y) {
+        if (linesPerHorizonUpperPoint.containsKey(y)) {
+            crossingSet.addAll(linesPerHorizonUpperPoint.get(y));
+        }
+        if (linesPerHorizonBottomPoint.containsKey(y)) {
+            crossingSet.removeAll(linesPerHorizonBottomPoint.get(y));
+        }
+    }
+
+    protected static List<Integer> getCrossingPoint(HashSet<Line> crossingSet, int y) {
+        return crossingSet.stream().map(l -> l.getXByY(y).get()).sorted().toList();
+    }
+
+    private void fillPolygonWorker(HashSet<Line> crossingSet, HashMap<Integer, ArrayList<Line>> linesPerHorizonUpperPoint,
+                       HashMap<Integer, ArrayList<Line>> linesPerHorizonBottomPoint, int lastY, Point anchor) {
         while (true) {
             final List<Integer> crossPoints;
             final int y;
@@ -38,15 +50,8 @@ public class FillPolygonImpl {
                 if (y <= lastY) {
                     return;
                 }
-
-                if (linesPerHorizonUpperPoint.containsKey(y)) {
-                    crossingSet.addAll(linesPerHorizonUpperPoint.get(y));
-                }
-                if (linesPerHorizonBottomPoint.containsKey(y)) {
-                    crossingSet.removeAll(linesPerHorizonBottomPoint.get(y));
-                }
-
-                crossPoints = crossingSet.stream().map(l -> l.getXByY(y).get()).sorted().toList();
+                updateCrossingSet(crossingSet, linesPerHorizonUpperPoint, linesPerHorizonBottomPoint, y);
+                crossPoints = getCrossingPoint(crossingSet, y);
             }
             assert (crossPoints.size() % 2) == 0;
 
@@ -57,17 +62,14 @@ public class FillPolygonImpl {
                 int length = right - left;
                 if (length > 0) {
                     System.arraycopy(patternPixels, calcOffset(left, y, patternWidth), imagePixels,
-                            calcOffset(left + ancor.x, y + ancor.y, imageWidth), length);
+                            calcOffset(left + anchor.x, y + anchor.y, imageWidth), length);
                 }
             }
         }
     }
 
-    public void fillPolygon(Polygon polygon, int parallelism, Point ancor) {
-        linesPerHorizonUpperPoint.clear();
-        linesPerHorizonBottomPoint.clear();
-        crossingSet.clear();
-
+    protected static void fillLinesPerHorizonMaps(Polygon polygon, HashMap<Integer, ArrayList<Line>> linesPerHorizonUpperPoint,
+                                           HashMap<Integer, ArrayList<Line>> linesPerHorizonBottomPoint) {
         polygon.getLines().forEach(line -> {
             BiConsumer<HashMap<Integer, ArrayList<Line>>, Integer> addValueToMap = (map, y) -> {
                 map.putIfAbsent(y, new ArrayList<>());
@@ -77,12 +79,20 @@ public class FillPolygonImpl {
             addValueToMap.accept(linesPerHorizonUpperPoint, Math.max(first.y, second.y));
             addValueToMap.accept(linesPerHorizonBottomPoint, Math.min(first.y, second.y));
         });
+    }
 
+    public void fillPolygon(Polygon polygon, int parallelism, Point anchor) {
+        HashMap<Integer, ArrayList<Line>> linesPerHorizonUpperPoint = new HashMap<>();
+        HashMap<Integer, ArrayList<Line>> linesPerHorizonBottomPoint = new HashMap<>();
+        HashSet<Line> crossingSet = new HashSet<>();
+
+        fillLinesPerHorizonMaps(polygon, linesPerHorizonUpperPoint, linesPerHorizonBottomPoint);
         Point enclosingMinPoint = polygon.enclosingMinPoint();
         Point enclosingMaxPoint = polygon.enclosingMaxPoint();
         curY.set(enclosingMaxPoint.y);
-        Runnable worker = () -> fillPolygonWorker(enclosingMinPoint.y, ancor);
 
+        Runnable worker = () -> fillPolygonWorker(crossingSet, linesPerHorizonUpperPoint, linesPerHorizonBottomPoint,
+                enclosingMinPoint.y, anchor);
         try {
             Thread[] threads = new Thread[parallelism];
             for (int i = 0; i < parallelism; i++) {

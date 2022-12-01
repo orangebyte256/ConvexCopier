@@ -65,6 +65,8 @@ public class PointCreator extends JLabel {
                     } else {
                         if (!Polygon.isPointsFits(points)) {
                             JOptionPane.showMessageDialog(PointCreator.this, "Points cannot form correct polygon");
+                            points.clear();
+                            updateFrame();
                             break;
                         }
                         isFinished = true;
@@ -87,21 +89,33 @@ public class PointCreator extends JLabel {
         public void keyReleased(KeyEvent e) {}
     }
 
+    private void drawBoldLine(Graphics g, Point first, Point second) {
+        g.setColor(Color.WHITE);
+        g.drawLine(first.x, first.y + 1, second.x, second.y + 1);
+        g.drawLine(first.x, first.y - 1, second.x, second.y - 1);
+        g.drawLine(first.x + 1, first.y, second.x + 1, second.y);
+        g.drawLine(first.x - 1, first.y, second.x - 1, second.y);
+        g.setColor(Color.BLACK);
+        g.drawLine(first.x, first.y, second.x, second.y);
+    }
+
     @Override
     public void paint(Graphics g) {
         super.paint(g);
 
-        for (Point point : points) {
-            g.fillOval(point.x - 5, point.y - 5, 10, 10);
-        }
         for (int i = 1; i < points.size(); i++) {
-            g.drawLine(points.get(i - 1).x, points.get(i - 1).y, points.get(i).x, points.get(i).y);
+            drawBoldLine(g, points.get(i - 1), points.get(i));
         }
         if (isFinished) {
             Point last = points.get(points.size() - 1);
             Point first = points.get(0);
-            g.drawLine(last.x, last.y, first.x, first.y);
+            drawBoldLine(g, last, first);
         }
+
+        for (Point point : points) {
+            g.fillOval(point.x - 5, point.y - 5, 10, 10);
+        }
+
     }
 
     PointCreator(BufferedImage image, String output) {
