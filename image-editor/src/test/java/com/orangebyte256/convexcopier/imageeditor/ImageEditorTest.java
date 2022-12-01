@@ -52,9 +52,9 @@ class ImageEditorTest {
         needMeasurement = false;
         compareFillPolygon(new Point(250, 250), WIDTH, HEIGHT, ancor, 0, 0,  500, 0,  500, 500,  0, 500);
         compareFillPolygon(new Point(250, 250), WIDTH, HEIGHT, ancor, 250, 0,  0, 250,  250, 500,  500, 250);
-        compareFillPolygon(new Point(640, 340), WIDTH, HEIGHT, ancor, "test0.ser");
-        compareFillPolygon(new Point(350, 260), WIDTH, HEIGHT, ancor, "test1.ser");
-        compareFillPolygon(new Point(350, 260), WIDTH, HEIGHT, ancor, "test2.ser");
+        compareFillPolygon(new Point(640, 340), WIDTH, HEIGHT, ancor, "./data/test0.ser");
+        compareFillPolygon(new Point(350, 260), WIDTH, HEIGHT, ancor, "./data/test1.ser");
+        compareFillPolygon(new Point(350, 260), WIDTH, HEIGHT, ancor, "./data/test2.ser");
     }
 
     @Test
