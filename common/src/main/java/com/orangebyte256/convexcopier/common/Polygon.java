@@ -15,11 +15,6 @@ public class Polygon {
         return pointsToLines(points).isPresent();
     }
 
-    public Boolean fitsToImage(BufferedImage image, Point ancor) {
-        return enclosingMinPoint.x + ancor.x >= 0 && enclosingMinPoint.y + ancor.y >= 0 &&
-                enclosingMaxPoint.x + ancor.x < image.getWidth() && enclosingMaxPoint.y + ancor.y < image.getHeight();
-    }
-
     private static Optional<ArrayList<Line>> pointsToLines(List<Point> points) {
         ArrayList<Line> lines = new ArrayList<>();
         for (int i = 0; i < points.size(); i++) {
@@ -60,6 +55,11 @@ public class Polygon {
         Optional<ArrayList<Line>> pointsToLines = pointsToLines(points);
         assert pointsToLines.isPresent();
         lines = pointsToLines.get();
+    }
+
+    public Boolean fitsToImage(BufferedImage image, Point ancor) {
+        return enclosingMinPoint.x + ancor.x >= 0 && enclosingMinPoint.y + ancor.y >= 0 &&
+                enclosingMaxPoint.x + ancor.x < image.getWidth() && enclosingMaxPoint.y + ancor.y < image.getHeight();
     }
 
     public Point enclosingMaxPoint() {
