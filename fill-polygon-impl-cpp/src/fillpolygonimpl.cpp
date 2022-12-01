@@ -69,29 +69,24 @@ void FillPolygonImpl::fillPolygonWorker(std::unordered_set<Line> &crossingSet, c
     }
 }
 
-void FillPolygonImpl::fillLinesPerHorizonMaps(int coordsSize, int* coordsArray,
+
+
+void FillPolygonImpl::fillLinesPerHorizonMaps(const std::vector<Point> &points,
                                               UnorderedMapOfLinesT &linesPerHorizonUpperPoint,
                                               UnorderedMapOfLinesT &linesPerHorizonBottomPoint) {
-    assert (coordsSize % 2 == 0);
-
-    int pointsCount = coordsSize / 2;
-    for (int i = 0; i < pointsCount; i++) {
-        Point cur(coordsArray + i * 2);
-        Point next(coordsArray + ((i + 1) % pointsCount) * 2);
+    for (size_t i = 0; i < points.size(); i++) {
+        Point cur = points[i];
+        Point next = points[(i + 1) % points.size()];
         Line line = Line(cur, next);
         linesPerHorizonUpperPoint[std::max(cur.y, next.y)].push_back(line);
         linesPerHorizonBottomPoint[std::min(cur.y, next.y)].push_back(line);
     }
 }
 
-void FillPolygonImpl::setupMaxAndMin(int coordsSize, int* coordsArray, int &maxY, int &minY) {
-    assert (coordsSize % 2 == 0);
-
-    minY = INT_MAX;
+void FillPolygonImpl::setupMaxAndMin(const std::vector<Point> &points, int &maxY, int &minY) {
     maxY = INT_MIN;
-    int pointsCount = coordsSize / 2;
-    for (int i = 0; i < pointsCount; i++) {
-        Point cur(coordsArray + i * 2);
+    minY = INT_MAX;
+    for (const auto &cur : points) {
         minY = std::min(minY, cur.y);
         maxY = std::max(maxY, cur.y);
     }
@@ -102,9 +97,10 @@ void FillPolygonImpl::fillPolygon(int coordsSize, int* coordsArray, int parallel
     UnorderedMapOfLinesT linesPerHorizonBottomPoint;
     std::unordered_set<Line> crossingSet;
 
+    const std::vector<Point> points = bareArrayToVecPoints(coordsSize, coordsArray);
     int lastY;
-    fillLinesPerHorizonMaps(coordsSize, coordsArray, linesPerHorizonUpperPoint, linesPerHorizonBottomPoint);
-    setupMaxAndMin(coordsSize, coordsArray, curY, lastY);
+    fillLinesPerHorizonMaps(points, linesPerHorizonUpperPoint, linesPerHorizonBottomPoint);
+    setupMaxAndMin(points, curY, lastY);
 
     std::vector<std::thread> threads(parallelism);
     Point anchor(anchorX, anchorY);
@@ -115,4 +111,15 @@ void FillPolygonImpl::fillPolygon(int coordsSize, int* coordsArray, int parallel
     for (int i = 0; i < parallelism; i++) {
         threads[i].join();
     }
+}
+
+std::vector<Point> FillPolygonImpl::bareArrayToVecPoints(int coordsSize, const int *coordsArray) {
+    assert (coordsSize % 2 == 0);
+
+    int pointsCount = coordsSize / 2;
+    std::vector<Point> res;
+    for (int i = 0; i < pointsCount; i++) {
+        res.emplace_back(coordsArray + i * 2);
+    }
+    return res;
 }

@@ -21,9 +21,10 @@ class FillPolygonImpl {
                                   const UnorderedMapOfLinesT &linesPerHorizonBottomPoint, int y);
     static std::set<int> calcCrossingPoints(const std::unordered_set<Line> &crossingSet, int y);
     static int calcOffsetInImage(int x, int y, int width);
-    static void setupMaxAndMin(int coordsSize, int *coordsArray, int &maxY, int &minY);
-    static void fillLinesPerHorizonMaps(int coordsSize, int *coordsArray, UnorderedMapOfLinesT &linesPerHorizonUpperPoint,
+    static void setupMaxAndMin(const std::vector<Point> &points, int &maxY, int &minY);
+    static void fillLinesPerHorizonMaps(const std::vector<Point> &points, UnorderedMapOfLinesT &linesPerHorizonUpperPoint,
                                  UnorderedMapOfLinesT &linesPerHorizonBottomPoint);
+    static std::vector<Point> bareArrayToVecPoints(int coordsSize, const int *coordsArray);
     void fillPolygonWorker(std::unordered_set<Line> &crossingSet, const UnorderedMapOfLinesT &linesPerHorizonUpperPoint,
                            const UnorderedMapOfLinesT &linesPerHorizonBottomPoint, const Point &anchor, int lastY);
 public:
