@@ -20,23 +20,7 @@ FillPolygonImpl::FillPolygonImpl(int *imagePixels, int imageWidth, int *patternP
             crossPoints.insert(x);
         }
     }
-    assert (crossPoints.size() % 2 == 0);
     return crossPoints;
-}
-
-void FillPolygonImpl::updateCrossingSet(std::unordered_set<Line> &crossingSet,
-                                               const UnorderedMapOfLinesT &linesPerHorizonUpperPoint,
-                                               const UnorderedMapOfLinesT &linesPerHorizonBottomPoint, int y) {
-    if (linesPerHorizonUpperPoint.find(y) != linesPerHorizonUpperPoint.end()) {
-        for (const Line &elem: linesPerHorizonUpperPoint.at(y)) {
-            crossingSet.insert(elem);
-        }
-    }
-    if (linesPerHorizonBottomPoint.find(y) != linesPerHorizonBottomPoint.end()) {
-        for (const Line &elem: linesPerHorizonBottomPoint.at(y)) {
-            crossingSet.erase(elem);
-        }
-    }
 }
 
 int FillPolygonImpl::calcOffsetInImage(int x, int y, int width) {
@@ -52,8 +36,18 @@ void FillPolygonImpl::fillPolygonWorker(std::unordered_set<Line> &crossingSet, c
             mutex.unlock();
             return;
         }
-        updateCrossingSet(crossingSet, linesPerHorizonUpperPoint, linesPerHorizonBottomPoint, y);
+        if (linesPerHorizonUpperPoint.find(y) != linesPerHorizonUpperPoint.end()) {
+            for (const Line &elem: linesPerHorizonUpperPoint.at(y)) {
+                crossingSet.insert(elem);
+            }
+        }
+        if (linesPerHorizonBottomPoint.find(y) != linesPerHorizonBottomPoint.end()) {
+            for (const Line &elem: linesPerHorizonBottomPoint.at(y)) {
+                crossingSet.erase(elem);
+            }
+        }
         std::set<int> crossPoints = calcCrossingPoints(crossingSet, y);
+        assert (crossPoints.size() % 2 == 0);
         mutex.unlock();
 
         auto orderedPoints = crossPoints.begin();
@@ -92,6 +86,17 @@ void FillPolygonImpl::setupMaxAndMin(const std::vector<Point> &points, int &maxY
     }
 }
 
+std::vector<Point> FillPolygonImpl::bareArrayToVecPoints(int coordsSize, const int *coordsArray) {
+    assert (coordsSize % 2 == 0);
+
+    int pointsCount = coordsSize / 2;
+    std::vector<Point> res;
+    for (int i = 0; i < pointsCount; i++) {
+        res.emplace_back(coordsArray + i * 2);
+    }
+    return res;
+}
+
 void FillPolygonImpl::fillPolygon(int coordsSize, int* coordsArray, int parallelism, int anchorX, int anchorY) {
     UnorderedMapOfLinesT linesPerHorizonUpperPoint;
     UnorderedMapOfLinesT linesPerHorizonBottomPoint;
@@ -111,15 +116,4 @@ void FillPolygonImpl::fillPolygon(int coordsSize, int* coordsArray, int parallel
     for (int i = 0; i < parallelism; i++) {
         threads[i].join();
     }
-}
-
-std::vector<Point> FillPolygonImpl::bareArrayToVecPoints(int coordsSize, const int *coordsArray) {
-    assert (coordsSize % 2 == 0);
-
-    int pointsCount = coordsSize / 2;
-    std::vector<Point> res;
-    for (int i = 0; i < pointsCount; i++) {
-        res.emplace_back(coordsArray + i * 2);
-    }
-    return res;
 }
