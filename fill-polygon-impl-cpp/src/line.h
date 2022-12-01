@@ -1,17 +1,17 @@
 #ifndef LINE
 #define LINE
 
-#include "Point.h"
+#include "point.h"
 
 #include <cassert>
 #include <functional>
 
 struct Line {
-	Point first, second;
-	double A, B, C;
+	const Point first, second;
+	const double A, B, C;
 
-public:
-	Line(Point first, Point second);
+	Line(Point _first, Point _second) : first(_first), second(_second),
+        A(first.y - second.y), B(second.x - first.x), C(first.x * second.y - second.x * first.y) {};
 	int getXByY(int y) const;
 };
 
