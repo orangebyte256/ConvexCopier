@@ -63,6 +63,7 @@ public class FillPolygonImpl {
         }
     }
 
+    // setup all maps which allows to support actual set for checking of crossing
     protected static void fillLinesPerHorizonMaps(Polygon polygon, HashMap<Integer, ArrayList<Line>> linesPerHorizonUpperPoint,
                                            HashMap<Integer, ArrayList<Line>> linesPerHorizonBottomPoint) {
         polygon.getLines().forEach(line -> {
@@ -76,6 +77,14 @@ public class FillPolygonImpl {
         });
     }
 
+    // Basic algorithm of filling polygon:
+    // We are moving horizontal line between the most top and bottom point of polygon.
+    // For each horizontal line we start moving from left to right and count each intersection.
+    // If amount of intersection is odd we could start copying pixels from pattern until amount not became even
+    // Improvement:
+    // Instead of checking crossing each lines, we could check only lines which definitely have intersection.
+    // For each horizontal line we support actual set for checking of crossing for this purpose.
+    // Current version of algorithm supports multithreading where each thread processing another horizontal lines.
     public void fillPolygon(Polygon polygon, int parallelism, Point anchor) {
         HashMap<Integer, ArrayList<Line>> linesPerHorizonUpperPoint = new HashMap<>();
         HashMap<Integer, ArrayList<Line>> linesPerHorizonBottomPoint = new HashMap<>();

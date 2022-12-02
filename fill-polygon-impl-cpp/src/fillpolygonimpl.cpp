@@ -61,6 +61,7 @@ void FillPolygonImpl::fillPolygonWorker(std::unordered_set<Line> &crossingSet, c
     }
 }
 
+// setup all maps which allows to support actual set for checking of crossing
 void FillPolygonImpl::fillLinesPerHorizonMaps(const std::vector<Point> &points,
                                               UnorderedMapOfLinesT &linesPerHorizonUpperPoint,
                                               UnorderedMapOfLinesT &linesPerHorizonBottomPoint) {
@@ -93,6 +94,14 @@ std::vector<Point> FillPolygonImpl::bareArrayToVecPoints(int coordsSize, const i
     return res;
 }
 
+// Basic algorithm of filling polygon:
+// We are moving horizontal line between the most top and bottom point of polygon.
+// For each horizontal line we start moving from left to right and count each intersection.
+// If amount of intersection is odd we could start copying pixels from pattern until amount not became even
+// Improvement:
+// Instead of checking crossing each lines, we could check only lines which definitely have intersection.
+// For each horizontal line we support actual set for checking of crossing for this purpose.
+// Current version of algorithm supports multithreading where each thread processing another horizontal lines.
 void FillPolygonImpl::fillPolygon(int coordsSize, int* coordsArray, int parallelism, int anchorX, int anchorY) {
     UnorderedMapOfLinesT linesPerHorizonUpperPoint;
     UnorderedMapOfLinesT linesPerHorizonBottomPoint;

@@ -11,10 +11,12 @@ public class Polygon {
     private final Point enclosingMaxPoint;
     private final ArrayList<Line> lines;
 
-    public static Boolean isPointsFits(List<Point> points) {
+    // checking that polygon doesn't have internal intersections
+    public static Boolean arePointsWithoutIntersections(List<Point> points) {
         return pointsToLines(points).isPresent();
     }
 
+    // convert polygon's points to lines
     private static Optional<ArrayList<Line>> pointsToLines(List<Point> points) {
         ArrayList<Line> lines = new ArrayList<>();
         for (int i = 0; i < points.size(); i++) {
@@ -22,14 +24,17 @@ public class Polygon {
             Point next = points.get((i + 1) % points.size());
             Line curLine = new Line(cur, next);
             for (int j = 0; j < lines.size(); j++) {
+                // last and first line should have common intersection point and exactly only point (no segment)
                 if (i == points.size() - 1 && j == 0) {
                     if (curLine.findCrossPoint(lines.get(j)).isEmpty()) {
                         return Optional.empty();
                     }
+                // current and previous line should have common intersection point and exactly only point (no segment)
                 } else if (j == lines.size() - 1) {
                     if (curLine.findCrossPoint(lines.get(j)).isEmpty()) {
                         return Optional.empty();
                     }
+                // otherwise there shouldn't be any intersection points
                 } else {
                     if (curLine.findCrossPoint(lines.get(j)).isPresent()) {
                         return Optional.empty();
@@ -62,10 +67,12 @@ public class Polygon {
                 enclosingMaxPoint.x + ancor.x < image.getWidth() && enclosingMaxPoint.y + ancor.y < image.getHeight();
     }
 
+    // the most right top point
     public Point enclosingMaxPoint() {
         return new Point(enclosingMaxPoint);
     }
 
+    // the most left bottom point
     public Point enclosingMinPoint() {
         return new Point(enclosingMinPoint);
     }

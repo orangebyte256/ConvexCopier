@@ -26,6 +26,7 @@ public class Line {
         return new Point(second);
     }
 
+    // checking that point inside line's borders (not necessary on line)
     protected Boolean isPointInsideSector(Point point) {
         return (Math.min(this.first.x, this.second.x) <= point.x && point.x <= Math.max(this.first.x, this.second.x) &&
                 Math.min(this.first.y, this.second.y) <= point.y && point.y <= Math.max(this.first.y, this.second.y));
@@ -35,14 +36,38 @@ public class Line {
         return Math.abs(A * p.x + B * p.y + C) < FUZZ_FACTOR;
     }
 
+    // finding intersection point of two lines or return Optional.empty otherwise (important, if lines have common
+    // segment (not point)) it will count as Optional.empty too
     public Optional<Point> findCrossPoint(Line other) {
+        // both segment form equals line
         if (pointOnLine(other.first) && pointOnLine(other.second)) {
+            // here we need to check how border's points relate to each other, there could be different situations:
+            //      {_____}
+            // [_______________] - fits will be equals 2
+
+            //      {_________}
+            // [______________] - fits will be equals 3
+
+            // {_____________}
+            // [_____________] - fits will be equals 4
+
+            //         {______}
+            // [_______]       - fits will be equals 2
+
+            //      {__________}
+            // [__________]       - fits will be equals 2
+
+            //             {______}
+            // [_______]        - fits will be equals 0
+
+            // so as we can see, if we wanna check intersection exactly in one point, so we need to check cases with
+            // fits equals 2
             int fits = 0;
             fits += this.isPointInsideSector(other.first) ? 1 : 0;
             fits += this.isPointInsideSector(other.second) ? 1 : 0;
             fits += other.isPointInsideSector(this.first) ? 1 : 0;
             fits += other.isPointInsideSector(this.second) ? 1 : 0;
-            if (fits > 2 || fits == 0) {
+            if (fits != 2) {
                 return Optional.empty();
             }
             if (this.first.equals(other.first) || this.first.equals(other.second) ||

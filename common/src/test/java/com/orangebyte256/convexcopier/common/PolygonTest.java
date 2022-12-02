@@ -10,14 +10,14 @@ class PolygonTest {
 
     @Test
     void isPointsFits() {
-        assertTrue(Polygon.isPointsFits(Utils.integersToPoints(0,0, 0,1000, 1000,1000, 1000,0)));
-        assertFalse(Polygon.isPointsFits(Utils.integersToPoints(0,0, 0,1000, 1000,0, 1000,1000)));
-        assertFalse(Polygon.isPointsFits(Utils.integersToPoints(0,0, 0,1000, 0,2000)));
-        assertFalse(Polygon.isPointsFits(Utils.integersToPoints(0,0, 0,2000, 0,1000)));
-        assertFalse(Polygon.isPointsFits(Utils.integersToPoints(0,0, 0,1000, 1000,1000, 1000,0, 1000,1000)));
-        assertFalse(Polygon.isPointsFits(Utils.integersToPoints(0,0, 0,1000, 1000,1000, 2000,1000, 2000,2000)));
-        assertFalse(Polygon.isPointsFits(Utils.integersToPoints(0,0, 0,1000, 1000,1000, 500,1000)));
-        assertTrue(Polygon.isPointsFits(Utils.integersToPoints(0,0, 0,1000, 1000,1000, 2000,1000)));
+        assertTrue(Polygon.arePointsWithoutIntersections(Utils.integersToPoints(0,0, 0,1000, 1000,1000, 1000,0)));
+        assertFalse(Polygon.arePointsWithoutIntersections(Utils.integersToPoints(0,0, 0,1000, 1000,0, 1000,1000)));
+        assertFalse(Polygon.arePointsWithoutIntersections(Utils.integersToPoints(0,0, 0,1000, 0,2000)));
+        assertFalse(Polygon.arePointsWithoutIntersections(Utils.integersToPoints(0,0, 0,2000, 0,1000)));
+        assertFalse(Polygon.arePointsWithoutIntersections(Utils.integersToPoints(0,0, 0,1000, 1000,1000, 1000,0, 1000,1000)));
+        assertFalse(Polygon.arePointsWithoutIntersections(Utils.integersToPoints(0,0, 0,1000, 1000,1000, 2000,1000, 2000,2000)));
+        assertFalse(Polygon.arePointsWithoutIntersections(Utils.integersToPoints(0,0, 0,1000, 1000,1000, 500,1000)));
+        assertTrue(Polygon.arePointsWithoutIntersections(Utils.integersToPoints(0,0, 0,1000, 1000,1000, 2000,1000)));
     }
 
     @Test

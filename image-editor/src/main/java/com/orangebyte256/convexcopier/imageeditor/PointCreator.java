@@ -63,7 +63,7 @@ public class PointCreator extends JLabel {
                     if (points.size() < 3) {
                         JOptionPane.showMessageDialog(PointCreator.this, "Please, choose more than two points");
                     } else {
-                        if (!Polygon.isPointsFits(points)) {
+                        if (!Polygon.arePointsWithoutIntersections(points)) {
                             JOptionPane.showMessageDialog(PointCreator.this, "Points cannot form correct polygon");
                             points.clear();
                             updateFrame();
