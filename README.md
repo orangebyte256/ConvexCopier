@@ -44,4 +44,11 @@ As result you will get `result.png` file with created image.
 <img src="https://github.com/orangebyte256/ConvexCopier/blob/d8967c17e6cb0efb0d0318c64daaaf376293f22a/readme/result.png" alt="drawing" width="500"/>
 </p>
 
-That's all! Enjoy!
+That's all! Enjoy! <br>
+A little more examples:
+<p align="center">
+<img src="https://github.com/orangebyte256/ConvexCopier/blob/cfd87b264c869da2b1aa9ee8aa8f09498d8b5d91/readme/example1.png" alt="drawing" width="500"/>
+<img src="https://github.com/orangebyte256/ConvexCopier/blob/cfd87b264c869da2b1aa9ee8aa8f09498d8b5d91/readme/example2.png" alt="drawing" width="500"/>
+</p>
+
+
