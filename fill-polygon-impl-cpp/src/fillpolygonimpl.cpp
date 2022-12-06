@@ -108,12 +108,13 @@ void FillPolygonImpl::fillPolygon(int coordsSize, int* coordsArray, int parallel
     std::unordered_set<Line> crossingSet;
 
     const std::vector<Point> points = bareArrayToVecPoints(coordsSize, coordsArray);
-    int lastY;
+    int startY, lastY;
     fillLinesPerHorizonMaps(points, linesPerHorizonUpperPoint, linesPerHorizonBottomPoint);
-    setupMaxAndMin(points, curY, lastY);
+    setupMaxAndMin(points, startY, lastY);
 
     std::vector<std::thread> threads(parallelism);
     Point anchor(anchorX, anchorY);
+    curY = startY;
     for (int i = 0; i < parallelism; i++) {
         threads[i] = std::thread(&FillPolygonImpl::fillPolygonWorker, this, std::ref(crossingSet), linesPerHorizonUpperPoint,
                                  linesPerHorizonBottomPoint, anchor, lastY);

@@ -19,7 +19,7 @@ class FillPolygonImpl {
     int *imagePixels, *patternPixels;
     int imageWidth, patternWidth;
     std::mutex mutex;
-    int curY;
+    int volatile curY;
 
     static std::vector<int> calcCrossingPoints(const std::unordered_set<Line> &crossingSet, int y);
     static int calcOffsetInImage(int x, int y, int width);
